@@ -3,9 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game</title>
+    <title>Document</title>
+    <style>
+        img:hover {
+            transform: scale(1.05);
+        }
+        img {
+            scale: 0.4;
+        }
+        .drag-over {
+            filter: drop-shadow(0 0 50px rgb(0, 0, 0));
+            transform: scale(1.05);
+        }
+
+
+    </style>
 </head>
 <body>
+    <table id="player">
+        
+    </table>
     
+
+    <script>
+        const table = document.getElementById('player');
+        let htmlString = '';
+        const data = [          //HIER: data ist eine JSON die vom Server kommt, nach einem Zug
+            {user: 'user1', cards: ['2_of_hearts', '3_of_clubs']},
+            {user: 'user2', cards: ['rueckseite', 'rueckseite']},
+            {user: 'user3', cards: ['rueckseite', 'rueckseite']},
+            {user: 'user4', cards: ['rueckseite', 'rueckseite']}
+        ];
+        htmlString += '<tr>\n';
+        data.forEach(user => {
+            htmlString += '<td> ' + user.user + ' </td>\n';
+        });
+        htmlString += '<tr/>\n<tr>\n';
+        data.forEach((user, userIndex) => {
+            htmlString += '<td>\n';
+            user.cards.forEach((card, cardIndex) => {
+                const imageId = `${userIndex + 1}${cardIndex + 1}`;
+                htmlString += `<img src='cards/${card}.svg' alt='${card}' draggable='true' id='${imageId}' />\n`;
+            });
+            htmlString += '</td>\n';
+        });
+
+        table.insertAdjacentHTML("beforeend", htmlString);
+
+
+        const images = document.querySelectorAll('img[draggable="true"]');
+        let move = [];
+
+        images.forEach(img => {
+            
+            img.addEventListener('dragstart', (e) => {
+                move[0] = (e.target.id); 
+            });
+            img.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                img.classList.add("drag-over");
+            });
+            img.addEventListener("dragleave", () => {
+                img.classList.remove("drag-over");
+            });
+            img.addEventListener("drop", (e) => {
+                e.preventDefault();
+                img.classList.remove("drag-over");
+                move[1] = (e.target.id); 
+                console.log("move: "+ move);    //HIER: schicke Server die JSON move + token -> Serverseitige Validierung
+                move = [];
+            });
+        });
+        
+        
+    </script>
 </body>
+
 </html>
