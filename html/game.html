@@ -4,52 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <style>
-        img:hover {
-            transform: scale(1.05);
-        }
-        img {
-            scale: 0.4;
-        }
-        .drag-over {
-            filter: drop-shadow(0 0 50px rgb(0, 0, 0));
-            transform: scale(1.05);
-        }
-
-
-    </style>
+    <link rel="stylesheet" href="../css/game.css">
 </head>
 <body>
-    <table id="player">
-        
-    </table>
+    <div id="game">
+        <div>
+            <div>Spielername</div>
+            <div>
+                <img src="bild1.jpg" alt="Bild 1">
+                <img src="bild2.jpg" alt="Bild 2">
+            </div>
+        </div>
+
+    </div>
     
 
     <script>
-        const table = document.getElementById('player');
+        const game = document.getElementById('game');
         let htmlString = '';
         const data = [          //HIER: data ist eine JSON die vom Server kommt, nach einem Zug
+            {playerIndex: 3},
             {user: 'user1', cards: ['2_of_hearts', '3_of_clubs']},
             {user: 'user2', cards: ['rueckseite', 'rueckseite']},
             {user: 'user3', cards: ['rueckseite', 'rueckseite']},
             {user: 'user4', cards: ['rueckseite', 'rueckseite']}
         ];
-        htmlString += '<tr>\n';
-        data.forEach(user => {
-            htmlString += '<td> ' + user.user + ' </td>\n';
-        });
-        htmlString += '<tr/>\n<tr>\n';
-        data.forEach((user, userIndex) => {
-            htmlString += '<td>\n';
-            user.cards.forEach((card, cardIndex) => {
-                const imageId = `${userIndex + 1}${cardIndex + 1}`;
-                htmlString += `<img src='cards/${card}.svg' alt='${card}' draggable='true' id='${imageId}' />\n`;
+        
+        data.slice(1).forEach((user, i) => {
+            htmlString += `<div class=\"player\" id=\"player ${i}\">`;
+            htmlString += `<div class=\"playername\" id=\"playername ${i}\">` + user.user + "</div>";
+            htmlString += `<div class=\"cards\" id=\"cards ${i}\">`
+            user.cards.forEach((card, j) => {
+                htmlString += `<img src=\"${card}.svg\" alt=\"${card}\" class=\"card\" id=\"${i} ${j}\">`
             });
-            htmlString += '</td>\n';
+            htmlString += "</div></div>"
         });
-
-        table.insertAdjacentHTML("beforeend", htmlString);
-
+        game.innerHTML = htmlString;
 
         const images = document.querySelectorAll('img[draggable="true"]');
         let move = [];
