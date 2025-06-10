@@ -2,9 +2,35 @@
             transform: scale(1.05);
         }
         img {
-            scale: 0.4;
+            margin: 0px;
+            padding: 0;
+            width: 30%;
+            height: auto;
         }
         .drag-over {
             filter: drop-shadow(0 0 50px rgb(0, 0, 0));
             transform: scale(1.05);
         }
+        .player {
+            height: 40%;
+            margin: 10px;
+            background-color: rgb(97, 97, 102);
+            border-radius: 15px;
+            padding: 7px;
+            display: inline-block;
+        }
+        .cards {
+            background-color: rgb(67, 67, 77);
+            border-radius: 15px;
+            display: flex;  
+            justify-content: center;   
+            align-items: center;       
+            gap: 10px;         
+            padding: 10px;   
+        }
+        .playername {
+            color: whitesmoke;
+            font-family: 'League Spartan', sans-serif;
+            font-size: 200%;
+        }
+    

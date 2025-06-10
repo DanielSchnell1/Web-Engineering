@@ -5,16 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="../css/game.css">
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="game">
-        <div>
-            <div>Spielername</div>
-            <div>
-                <img src="bild1.jpg" alt="Bild 1">
-                <img src="bild2.jpg" alt="Bild 2">
-            </div>
-        </div>
+
 
     </div>
     
@@ -24,7 +19,7 @@
         let htmlString = '';
         const data = [          //HIER: data ist eine JSON die vom Server kommt, nach einem Zug
             {playerIndex: 3},
-            {user: 'user1', cards: ['2_of_hearts', '3_of_clubs']},
+            {user: 'user1', cards: ['karo 2', 'herz 3']},
             {user: 'user2', cards: ['rueckseite', 'rueckseite']},
             {user: 'user3', cards: ['rueckseite', 'rueckseite']},
             {user: 'user4', cards: ['rueckseite', 'rueckseite']}
@@ -35,7 +30,7 @@
             htmlString += `<div class=\"playername\" id=\"playername ${i}\">` + user.user + "</div>";
             htmlString += `<div class=\"cards\" id=\"cards ${i}\">`
             user.cards.forEach((card, j) => {
-                htmlString += `<img src=\"${card}.svg\" alt=\"${card}\" class=\"card\" id=\"${i} ${j}\">`
+                htmlString += `<img src=\"../img/cards/${card}.svg\" alt=\"${card}\" class=\"card\" draggable=\"true\" id=\"${i} ${j}\">`
             });
             htmlString += "</div></div>"
         });
