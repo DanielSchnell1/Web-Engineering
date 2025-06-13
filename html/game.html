@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<<<<<<< HEAD
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
@@ -35,33 +36,184 @@
             htmlString += "</div></div>"
         });
         game.innerHTML = htmlString;
+=======
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+  <title>Poker Game</title>
+  <style>
+    body {
+      background-color: #222;
+      color: white;
+      font-family: sans-serif;
+    }
 
-        const images = document.querySelectorAll('img[draggable="true"]');
-        let move = [];
+    .table {
+      width: 700px;
+      height: 400px;
+      background-color: #1e7e34;
+      border-radius: 50%;
+      margin: 50px auto;
+      position: relative;
+      box-shadow: 0 0 40px rgba(0,0,0,0.6);
+    }
 
-        images.forEach(img => {
-            
-            img.addEventListener('dragstart', (e) => {
-                move[0] = (e.target.id); 
-            });
-            img.addEventListener("dragover", (e) => {
-                e.preventDefault();
-                img.classList.add("drag-over");
-            });
-            img.addEventListener("dragleave", () => {
-                img.classList.remove("drag-over");
-            });
-            img.addEventListener("drop", (e) => {
-                e.preventDefault();
-                img.classList.remove("drag-over");
-                move[1] = (e.target.id); 
-                console.log("move: "+ move);    //HIER: schicke Server die JSON move + token -> Serverseitige Validierung
-                move = [];
-            });
-        });
-        
-        
-    </script>
+    .player {
+      position: absolute;           /* jeder bekommt eigene Position am Tisch */
+      text-align: center;
+      width: 120px;
+    }
+
+    .player .name {
+      background-color: rgba(255,255,255,0.8);
+      color: #000;
+      padding: 5px;
+      border-radius: 10px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .card {
+      width: 60px;
+      margin: 0 2px;
+      cursor: grab;                 /* greifbare Karten */
+    }
+
+    .drag-over {                    /* highlighten, wenn mit Maus über Karte */
+      filter: drop-shadow(0 0 50px rgb(0, 0, 0));
+      transform: scale(1.05);
+    }
+
+    .top { top: 10px; left: 50%; transform: translateX(-50%); }
+    .bottom { bottom: 10px; left: 50%; transform: translateX(-50%); }
+    .left { top: 50%; left: 10px; transform: translateY(-50%); }
+    .right { top: 50%; right: 10px; transform: translateY(-50%); }
+
+    .community-cards {              /* Karten in der Mitte (Texas Hold’em Style) */
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    .community-cards img {
+      width: 60px;
+      height: auto;
+    }
+
+    .controls {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .controls input[type=range] {
+      width: 200px;
+    }
+
+    .highlight {
+      border: 3px solid gold;
+      border-radius: 12px;
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="table" id="table"></div>
+  <div id="community" class="community-cards"></div>
+
+  <div class="controls">
+    <label for="bet">Einsatz:</label>
+    <input type="range" id="bet" name="bet" min="0" max="1000" step="10">
+    <span id="betValue">500</span> Chips
+    <br><br>
+    <button id="betButton">Setzen</button>
+  </div>
+
+  <script>
+    const table = document.getElementById('table');
+    const data = [
+      {user: 'user1', cards: ['rueckseite', 'rueckseite']},
+      {user: 'user2', cards: ['rueckseite', 'rueckseite']},
+      {user: 'user3', cards: ['rueckseite', 'rueckseite']},
+      {user: 'DU', cards: ['2_of_hearts', '3_of_clubs']}
+    ];
+>>>>>>> a949c44 (Initial commit: Poker game frontend)
+
+    const positions = ['top', 'left', 'right', 'bottom'];
+
+    data.forEach((userData, index) => {
+      const playerDiv = document.createElement('div');
+      playerDiv.classList.add('player', positions[index]);
+      if (userData.user === 'DU') playerDiv.classList.add('highlight');
+
+      const nameDiv = document.createElement('div');
+      nameDiv.classList.add('name');
+      nameDiv.textContent = userData.user;
+      playerDiv.appendChild(nameDiv);
+
+      userData.cards.forEach((card, cardIndex) => {
+        const img = document.createElement('img');
+        img.src = `cards/${card}.svg`;
+        img.alt = card;
+        img.classList.add('card');
+        img.setAttribute('draggable', 'true');
+        img.id = `${index + 1}${cardIndex + 1}`;
+        playerDiv.appendChild(img);
+      });
+
+      table.appendChild(playerDiv);
+    });
+
+    // Community Cards
+    const community = document.getElementById('community');
+    const communityCards = ['10_of_hearts', '7_of_spades', '2_of_diamonds', 'karo_dame', 'pik_ass'];
+    communityCards.forEach(card => {
+      const img = document.createElement('img');
+      img.src = `cards/${card}.svg`;
+      img.alt = card;
+      community.appendChild(img);
+    });
+
+    // Drag & Drop
+    const images = document.querySelectorAll('img[draggable="true"]');
+    let move = [];
+
+    images.forEach(img => {
+      img.addEventListener('dragstart', (e) => {
+        move[0] = (e.target.id); 
+      });
+      img.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        img.classList.add("drag-over");
+      });
+      img.addEventListener("dragleave", () => {
+        img.classList.remove("drag-over");
+      });
+      img.addEventListener("drop", (e) => {
+        e.preventDefault();
+        img.classList.remove("drag-over");
+        move[1] = (e.target.id); 
+        console.log("move: "+ move);    
+        move = [];
+      });
+    });
+
+    // Einsatzanzeige
+    const betSlider = document.getElementById('bet');
+    const betValue = document.getElementById('betValue');
+    const betButton = document.getElementById('betButton');
+
+    betSlider.addEventListener('input', () => {
+      betValue.textContent = betSlider.value;
+    });
+
+    betButton.addEventListener('click', () => {
+      alert(`Du setzt ${betSlider.value} Chips!`);
+    });
+  </script>
+
 </body>
-
 </html>
