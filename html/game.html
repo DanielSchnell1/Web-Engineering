@@ -1,123 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<<<<<<< HEAD
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="../css/game.css">
-    <link href="https://fonts.googleapis.com/css2?family=League+Spartan&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div id="game">
-
-
-    </div>
-    
-
-    <script>
-        const game = document.getElementById('game');
-        let htmlString = '';
-        const data = [          //HIER: data ist eine JSON die vom Server kommt, nach einem Zug
-            {playerIndex: 3},
-            {user: 'user1', cards: ['karo 2', 'herz 3']},
-            {user: 'user2', cards: ['rueckseite', 'rueckseite']},
-            {user: 'user3', cards: ['rueckseite', 'rueckseite']},
-            {user: 'user4', cards: ['rueckseite', 'rueckseite']}
-        ];
-        
-        data.slice(1).forEach((user, i) => {
-            htmlString += `<div class=\"player\" id=\"player ${i}\">`;
-            htmlString += `<div class=\"playername\" id=\"playername ${i}\">` + user.user + "</div>";
-            htmlString += `<div class=\"cards\" id=\"cards ${i}\">`
-            user.cards.forEach((card, j) => {
-                htmlString += `<img src=\"../img/cards/${card}.svg\" alt=\"${card}\" class=\"card\" draggable=\"true\" id=\"${i} ${j}\">`
-            });
-            htmlString += "</div></div>"
-        });
-        game.innerHTML = htmlString;
-=======
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Poker Game</title>
-  <style>
-    body {
-      background-color: #222;
-      color: white;
-      font-family: sans-serif;
-    }
-
-    .table {
-      width: 700px;
-      height: 400px;
-      background-color: #1e7e34;
-      border-radius: 50%;
-      margin: 50px auto;
-      position: relative;
-      box-shadow: 0 0 40px rgba(0,0,0,0.6);
-    }
-
-    .player {
-      position: absolute;           /* jeder bekommt eigene Position am Tisch */
-      text-align: center;
-      width: 120px;
-    }
- 
-    .player .name {
-      background-color: rgba(255,255,255,0.8);
-      color: #000;
-      padding: 5px;
-      border-radius: 10px;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-
-    .card {
-      width: 60px;
-      margin: 0 2px;
-      cursor: grab;                 /* greifbare Karten */
-    }
-
-    .drag-over {                    /* highlighten, wenn mit Maus über Karte */
-      filter: drop-shadow(0 0 50px rgb(0, 0, 0));
-      transform: scale(1.05);
-    }
-
-    .top { top: 10px; left: 50%; transform: translateX(-50%); }
-    .bottom { bottom: 10px; left: 50%; transform: translateX(-50%); }
-    .left { top: 50%; left: 10px; transform: translateY(-50%); }
-    .right { top: 50%; right: 10px; transform: translateY(-50%); }
-
-    .community-cards {              /* Karten in der Mitte (Texas Hold’em Style) */
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      display: flex;
-      gap: 10px;
-      z-index: 10;
-    }
-
-    .community-cards img {
-      width: 60px;
-      height: auto;
-    }
-
-    .controls {
-      margin-top: 30px;
-      text-align: center;
-    }
-
-    .controls input[type=range] {
-      width: 200px;
-    }
-
-    .highlight {
-      border: 3px solid gold;
-      border-radius: 12px;
-      padding: 5px;
-    }
-  </style>
+  <link rel="stylesheet" href="../css/game.css" />
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -140,7 +28,6 @@
       {user: 'user3', cards: ['rueckseite', 'rueckseite']},
       {user: 'DU', cards: ['2_of_hearts', '3_of_clubs']}
     ];
->>>>>>> a949c44 (Initial commit: Poker game frontend)
 
     const positions = ['top', 'left', 'right', 'bottom'];
 
@@ -183,7 +70,7 @@
 
     images.forEach(img => {
       img.addEventListener('dragstart', (e) => {
-        move[0] = (e.target.id); 
+        move[0] = e.target.id; 
       });
       img.addEventListener("dragover", (e) => {
         e.preventDefault();
@@ -195,8 +82,8 @@
       img.addEventListener("drop", (e) => {
         e.preventDefault();
         img.classList.remove("drag-over");
-        move[1] = (e.target.id); 
-        console.log("move: "+ move);    
+        move[1] = e.target.id; 
+        console.log("move: " + move);    
         move = [];
       });
     });
