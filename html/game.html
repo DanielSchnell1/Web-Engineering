@@ -1,16 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Poker Game</title>
   <link rel="stylesheet" href="../css/game.css" />
-  <link href="https://fonts.googleapis.com/css2?family=League+Spartan&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #1c1c1c;
+      font-family: 'League Spartan', sans-serif;
+      color: white;
+    }
+
+    .table {
+      width: 700px;
+      height: 400px;
+      background-color: #1e7e34;
+      border-radius: 50%;
+      margin: 50px auto;
+      position: relative;
+      box-shadow: 0 0 40px rgba(0,0,0,0.6);
+    }
+
+    .top    { top: 10px; left: 50%; transform: translateX(-50%); }
+    .bottom { bottom: 10px; left: 50%; transform: translateX(-50%); }
+    .left   { top: 50%; left: 10px; transform: translateY(-50%); }
+    .right  { top: 50%; right: 10px; transform: translateY(-50%); }
+
+    .player {
+      position: absolute;
+      text-align: center;
+      width: 140px;
+    }
+
+    .playername {
+      font-weight: bold;
+      font-size: 1.3rem;
+      margin-bottom: 5px;
+    }
+
+    .controls {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .controls input[type=range] {
+      width: 200px;
+    }
+
+    .community-cards {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    .community-cards img {
+      width: 60px;
+      height: auto;
+    }
+  </style>
 </head>
 <body>
 
-  <div class="table" id="table"></div>
-  <div id="community" class="community-cards"></div>
+  <div class="table" id="table">
+    <div class="player top"    id="player0"></div>
+    <div class="player left"   id="player1"></div>
+    <div class="player right"  id="player2"></div>
+    <div class="player bottom" id="player3"></div>
+
+    <div id="community" class="community-cards"></div>
+  </div>
 
   <div class="controls">
     <label for="bet">Einsatz:</label>
@@ -21,47 +85,42 @@
   </div>
 
   <script>
-    const table = document.getElementById('table');
-    const data = [
-      {user: 'user1', cards: ['rueckseite', 'rueckseite']},
-      {user: 'user2', cards: ['rueckseite', 'rueckseite']},
-      {user: 'user3', cards: ['rueckseite', 'rueckseite']},
-      {user: 'DU', cards: ['2_of_hearts', '3_of_clubs']}
+    const players = [
+      { user: 'user1', cards: ['rueckseite', 'rueckseite'] },
+      { user: 'user2', cards: ['rueckseite', 'rueckseite'] },
+      { user: 'user3', cards: ['rueckseite', 'rueckseite'] },
+      { user: 'DU',    cards: ['herz 2', 'karo 3'] }
     ];
 
-    const positions = ['top', 'left', 'right', 'bottom'];
+    players.forEach((player, index) => {
+      const container = document.getElementById(`player${index}`);
+      container.innerHTML = `
+        <div class="playername">${player.user}</div>
+        <div class="cards" id="cards${index}"></div>
+      `;
 
-    data.forEach((userData, index) => {
-      const playerDiv = document.createElement('div');
-      playerDiv.classList.add('player', positions[index]);
-      if (userData.user === 'DU') playerDiv.classList.add('highlight');
-
-      const nameDiv = document.createElement('div');
-      nameDiv.classList.add('name');
-      nameDiv.textContent = userData.user;
-      playerDiv.appendChild(nameDiv);
-
-      userData.cards.forEach((card, cardIndex) => {
+      const cardsDiv = container.querySelector('.cards');
+      player.cards.forEach((card, j) => {
+        const src = card === 'rueckseite' ? '../cards/rueckseite.svg' : `../cards/${card}.svg`;
         const img = document.createElement('img');
-        img.src = `cards/${card}.svg`;
+        img.src = src;
         img.alt = card;
-        img.classList.add('card');
+        img.className = "card";
         img.setAttribute('draggable', 'true');
-        img.id = `${index + 1}${cardIndex + 1}`;
-        playerDiv.appendChild(img);
+        img.id = `${index}_${j}`;
+        cardsDiv.appendChild(img);
       });
-
-      table.appendChild(playerDiv);
     });
 
-    // Community Cards
-    const community = document.getElementById('community');
-    const communityCards = ['10_of_hearts', '7_of_spades', '2_of_diamonds', 'karo_dame', 'pik_ass'];
+    // Community Cards in der Mitte
+    const communityCards = ['herz 10', 'pik 7', 'karo 2', 'karo dame', 'pik ass'];
+    const communityDiv = document.getElementById('community');
+
     communityCards.forEach(card => {
       const img = document.createElement('img');
-      img.src = `cards/${card}.svg`;
+      img.src = `../cards/${card}.svg`;
       img.alt = card;
-      community.appendChild(img);
+      communityDiv.appendChild(img);
     });
 
     // Drag & Drop
@@ -69,21 +128,21 @@
     let move = [];
 
     images.forEach(img => {
-      img.addEventListener('dragstart', (e) => {
-        move[0] = e.target.id; 
+      img.addEventListener('dragstart', e => {
+        move[0] = e.target.id;
       });
-      img.addEventListener("dragover", (e) => {
+      img.addEventListener('dragover', e => {
         e.preventDefault();
         img.classList.add("drag-over");
       });
-      img.addEventListener("dragleave", () => {
+      img.addEventListener('dragleave', () => {
         img.classList.remove("drag-over");
       });
-      img.addEventListener("drop", (e) => {
+      img.addEventListener('drop', e => {
         e.preventDefault();
         img.classList.remove("drag-over");
-        move[1] = e.target.id; 
-        console.log("move: " + move);    
+        move[1] = e.target.id;
+        console.log("Karten-Move: ", move);
         move = [];
       });
     });
@@ -101,6 +160,5 @@
       alert(`Du setzt ${betSlider.value} Chips!`);
     });
   </script>
-
 </body>
 </html>
