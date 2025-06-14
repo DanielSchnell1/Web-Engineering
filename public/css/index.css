@@ -1,4 +1,4 @@
-#lobby {
+#lobbyDiv {
   border: 2px solid #524f4f;
   padding: 20px;
   box-sizing: border-box;
@@ -10,9 +10,9 @@
   align-items: center;  
 }
 
-#lobby * {
+#lobbyDiv * {
     padding: 5% auto 5% auto;
 }
-#lobby *:hover{
+#lobbyDiv *:hover{
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }

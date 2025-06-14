@@ -14,12 +14,11 @@ ws.addEventListener("message", (event) => {
     }
 });
 ws.addEventListener('open', () => {
-  ws.send(JSON.stringify({ type: 'getLobbyState', token }));
+  ws.send(JSON.stringify({ type: 'getLobbyState', token: token }));
 });
 start = document.getElementById("start");
 
 start.addEventListener('click', () => {
-  console.log("Klick");
-  ws.send(JSON.stringify({ type: 'startGame', token }));
+  ws.send(JSON.stringify({ type: 'startGame', token: token }));
 });
 
