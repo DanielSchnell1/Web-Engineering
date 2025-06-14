@@ -90,10 +90,18 @@ wss.on('connection', (ws) => {
         user.ws = ws;
         users.set(data.token, user);
       }
+
+
     } else if (data.type === 'getLobbyState') {
       lobby = getLobby(data.token);
         ws.send(JSON.stringify({ type: 'lobby', users: games.get(lobby).getPlayerNames(users), code: lobby})); 
+    
+    
+    } else if(data.type === 'draw') {
+        console.log(data.cards);
     }
+
+    
   });
 
 

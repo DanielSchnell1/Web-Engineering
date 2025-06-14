@@ -7,10 +7,6 @@
             width: 30%;
             height: auto;
         }
-        .drag-over {
-            filter: drop-shadow(0 0 50px rgb(0, 0, 0));
-            transform: scale(1.05);
-        }
 
         .cards {
             background-color: rgb(67, 67, 77);
@@ -76,7 +72,9 @@
       padding: 1.5%;
       position: relative;
     }
-    #players div:nth-child(1) {
-      
-    }
+  .selected {
+    transform: scale(1.05); /* 10% größer */
+    transition: transform 0.3s ease;
+    box-shadow: 0 0 5px 2px rgb(166, 255, 0);
+  } 
     

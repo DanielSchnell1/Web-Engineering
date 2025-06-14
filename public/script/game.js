@@ -1,3 +1,6 @@
+    const drawCards = [];
+    
+    
     const players = [
 
       { user: 'user1',    cards: ['rueckseite', 'rueckseite', 'rueckseite', 'rueckseite', 'rueckseite'] },
@@ -24,7 +27,7 @@
         img.src = src;
         img.alt = card;
         img.className = "card";
-        img.setAttribute('draggable', 'true');
+        // img.setAttribute('draggable', 'true');
         img.id = `${index}_${j}`;
         cardsDiv.appendChild(img);
       });
@@ -42,28 +45,27 @@
     });
 
     // Drag & Drop
-    const images = document.querySelectorAll('img[draggable="true"]');
-    let move = [];
 
-    images.forEach(img => {
-      img.addEventListener('dragstart', e => {
-        move[0] = e.target.id;
-      });
-      img.addEventListener('dragover', e => {
-        e.preventDefault();
-        img.classList.add("drag-over");
-      });
-      img.addEventListener('dragleave', () => {
-        img.classList.remove("drag-over");
-      });
-      img.addEventListener('drop', e => {
-        e.preventDefault();
-        img.classList.remove("drag-over");
-        move[1] = e.target.id;
-        console.log("Karten-Move: ", move);
-        move = [];
-      });
-    });
+
+    // images.forEach(img => {
+    //   img.addEventListener('dragstart', e => {
+    //     move[0] = e.target.id;
+    //   });
+    //   img.addEventListener('dragover', e => {
+    //     e.preventDefault();
+    //     img.classList.add("drag-over");
+    //   });
+    //   img.addEventListener('dragleave', () => {
+    //     img.classList.remove("drag-over");
+    //   });
+    //   img.addEventListener('drop', e => {
+    //     e.preventDefault();
+    //     img.classList.remove("drag-over");
+    //     move[1] = e.target.id;
+    //     console.log("Karten-Move: ", move);
+    //     move = [];
+    //   });
+    // });
 
     // Einsatzanzeige
     const betSlider = document.getElementById('bet');
@@ -77,3 +79,30 @@
     betButton.addEventListener('click', () => {
       alert(`Du setzt ${betSlider.value} Chips!`);
     });
+
+
+
+
+
+document.querySelectorAll('img').forEach(img => {
+  img.addEventListener('click', () => {
+    const id = img.id;
+
+    if (img.classList.contains('selected')) {
+      img.classList.remove('selected');
+      const index = drawCards.indexOf(id);
+      if (index > -1) drawCards.splice(index, 1);
+    } else {
+      img.classList.add('selected');
+      drawCards.push(id);
+    }
+  });
+});
+
+document.getElementById("drawButton").addEventListener("click", () => {
+  ws.send(JSON.stringify({
+    type: 'draw',
+    token: sessionStorage.getItem('jwt') || null,
+    cards: drawCards
+  }));
+});
