@@ -38,17 +38,6 @@
       box-shadow: 0 0 40px rgba(0,0,0,0.6);
     }
 
-    .top    { top: 10px; left: 50%; transform: translateX(-50%); }
-    .bottom { bottom: 10px; left: 50%; transform: translateX(-50%); }
-    .left   { top: 50%; left: 10px; transform: translateY(-50%); }
-    .right  { top: 50%; right: 10px; transform: translateY(-50%); }
-
-    .player {
-      position: absolute;
-      text-align: center;
-      width: 140px;
-    }
-
     .playername {
         color: whitesmoke;
         font-family: 'League Spartan', sans-serif;
@@ -79,5 +68,21 @@
     .community-cards img {
       width: 60px;
       height: auto;
+    }
+    #players{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 7%;
+    }
+
+    .player{
+      width: 20%;
+      padding: 1%;
+      position: relative;
+
+    }
+    #players div:nth-child(1) {
+      
     }
     

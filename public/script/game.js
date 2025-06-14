@@ -1,19 +1,20 @@
     const players = [
-      { user: 'user1', cards: ['rueckseite', 'rueckseite'] },
-      { user: 'user2', cards: ['rueckseite', 'rueckseite'] },
-      { user: 'user3', cards: ['rueckseite', 'rueckseite'] },
+
+
       { user: 'DU',    cards: ['herz 2', 'karo 3'] }
     ];
 
     players.forEach((player, index) => {
-      const container = document.getElementById(`player${index}`);
-      container.innerHTML = `
-        <div class="playername">${player.user}</div>
-        <div class="cards" id="cards${index}"></div>
+      const container = document.getElementById(`players`);
+      container.innerHTML += `
+        <div class="player" style="top: ${600-200*Math.sqrt(10-20*(index/(players.length-1)-0.5)**2)}%;">
+          <div class="playername">${player.user}</div>
+          <div class="cards" id="cards${index}"></div>
+        </div>
       `;
 
-      const cardsDiv = container.querySelector('.cards');
       player.cards.forEach((card, j) => {
+        let cardsDiv = document.getElementById(`cards${index}`);
         const src = `/img/cards/${card}.svg`
         const img = document.createElement('img');
         img.src = src;
