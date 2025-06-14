@@ -11,14 +11,7 @@
             filter: drop-shadow(0 0 50px rgb(0, 0, 0));
             transform: scale(1.05);
         }
-        .player {
-            height: 40%;
-            margin: 10px;
-            background-color: rgb(97, 97, 102);
-            border-radius: 15px;
-            padding: 7px;
-            display: inline-block;
-        }
+
         .cards {
             background-color: rgb(67, 67, 77);
             border-radius: 15px;
@@ -28,9 +21,63 @@
             gap: 10px;         
             padding: 10px;   
         }
-        .playername {
-            color: whitesmoke;
-            font-family: 'League Spartan', sans-serif;
-            font-size: 200%;
-        }
+
+    body {
+      background-color: #1c1c1c;
+      font-family: 'League Spartan', sans-serif;
+      color: white;
+    }
+
+    .table {
+      width: 700px;
+      height: 400px;
+      background-color: #1e7e34;
+      border-radius: 50%;
+      margin: 50px auto;
+      position: relative;
+      box-shadow: 0 0 40px rgba(0,0,0,0.6);
+    }
+
+    .top    { top: 10px; left: 50%; transform: translateX(-50%); }
+    .bottom { bottom: 10px; left: 50%; transform: translateX(-50%); }
+    .left   { top: 50%; left: 10px; transform: translateY(-50%); }
+    .right  { top: 50%; right: 10px; transform: translateY(-50%); }
+
+    .player {
+      position: absolute;
+      text-align: center;
+      width: 140px;
+    }
+
+    .playername {
+        color: whitesmoke;
+        font-family: 'League Spartan', sans-serif;
+        font-size: 170%;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .controls {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .controls input[type=range] {
+      width: 200px;
+    }
+
+    .community-cards {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    .community-cards img {
+      width: 60px;
+      height: auto;
+    }
     

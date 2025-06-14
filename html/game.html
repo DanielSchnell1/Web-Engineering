@@ -7,62 +7,7 @@
   <link rel="stylesheet" href="../css/game.css" />
   <link href="https://fonts.googleapis.com/css2?family=League+Spartan&display=swap" rel="stylesheet" />
   <style>
-    body {
-      background-color: #1c1c1c;
-      font-family: 'League Spartan', sans-serif;
-      color: white;
-    }
-
-    .table {
-      width: 700px;
-      height: 400px;
-      background-color: #1e7e34;
-      border-radius: 50%;
-      margin: 50px auto;
-      position: relative;
-      box-shadow: 0 0 40px rgba(0,0,0,0.6);
-    }
-
-    .top    { top: 10px; left: 50%; transform: translateX(-50%); }
-    .bottom { bottom: 10px; left: 50%; transform: translateX(-50%); }
-    .left   { top: 50%; left: 10px; transform: translateY(-50%); }
-    .right  { top: 50%; right: 10px; transform: translateY(-50%); }
-
-    .player {
-      position: absolute;
-      text-align: center;
-      width: 140px;
-    }
-
-    .playername {
-      font-weight: bold;
-      font-size: 1.3rem;
-      margin-bottom: 5px;
-    }
-
-    .controls {
-      text-align: center;
-      margin-top: 30px;
-    }
-
-    .controls input[type=range] {
-      width: 200px;
-    }
-
-    .community-cards {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      display: flex;
-      gap: 10px;
-      z-index: 10;
-    }
-
-    .community-cards img {
-      width: 60px;
-      height: auto;
-    }
+    
   </style>
 </head>
 <body>
@@ -101,7 +46,7 @@
 
       const cardsDiv = container.querySelector('.cards');
       player.cards.forEach((card, j) => {
-        const src = card === 'rueckseite' ? '../cards/rueckseite.svg' : `../cards/${card}.svg`;
+        const src = `../img/cards/${card}.svg`
         const img = document.createElement('img');
         img.src = src;
         img.alt = card;
@@ -118,7 +63,7 @@
 
     communityCards.forEach(card => {
       const img = document.createElement('img');
-      img.src = `../cards/${card}.svg`;
+      img.src = `../img/cards/${card}.svg`;
       img.alt = card;
       communityDiv.appendChild(img);
     });
