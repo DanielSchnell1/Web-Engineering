@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Poker Game</title>
+  <link rel="stylesheet" href="/css/game.css" />
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan&display=swap" rel="stylesheet" />
+  <style>
+    
+  </style>
+</head>
+<body>
+
+  <div class="table" id="table">
+    <div class="player top"    id="player0"></div>
+    <div class="player left"   id="player1"></div>
+    <div class="player right"  id="player2"></div>
+    <div class="player bottom" id="player3"></div>
+
+    <div id="community" class="community-cards"></div>
+  </div>
+
+  <div class="controls">
+    <label for="bet">Einsatz:</label>
+    <input type="range" id="bet" name="bet" min="0" max="1000" step="10">
+    <span id="betValue">500</span> Chips
+    <br><br>
+    <button id="betButton">Setzen</button>
+  </div>
+
+  <script src="/script/alwaysactive.js"></script>
+  <script src="/script/game.js">
+
+  </script>
+</body>
+</html>

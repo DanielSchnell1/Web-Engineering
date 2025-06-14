@@ -1,36 +1,3 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Poker Game</title>
-  <link rel="stylesheet" href="../css/game.css" /> <!-- Pfad muss geändert werden (funktioniert nicht bei laufendem Server) -->
-  <link href="https://fonts.googleapis.com/css2?family=League+Spartan&display=swap" rel="stylesheet" />
-  <style>
-    
-  </style>
-</head>
-<body>
-
-  <div class="table" id="table">
-    <div class="player top"    id="player0"></div>
-    <div class="player left"   id="player1"></div>
-    <div class="player right"  id="player2"></div>
-    <div class="player bottom" id="player3"></div>
-
-    <div id="community" class="community-cards"></div>
-  </div>
-
-  <div class="controls">
-    <label for="bet">Einsatz:</label>
-    <input type="range" id="bet" name="bet" min="0" max="1000" step="10">
-    <span id="betValue">500</span> Chips
-    <br><br>
-    <button id="betButton">Setzen</button>
-  </div>
-
-  <script src="/script/alwaysactive.js"></script>
-  <script>
     const players = [
       { user: 'user1', cards: ['rueckseite', 'rueckseite'] },
       { user: 'user2', cards: ['rueckseite', 'rueckseite'] },
@@ -47,7 +14,7 @@
 
       const cardsDiv = container.querySelector('.cards');
       player.cards.forEach((card, j) => {
-        const src = `../img/cards/${card}.svg`
+        const src = `/img/cards/${card}.svg`
         const img = document.createElement('img');
         img.src = src;
         img.alt = card;
@@ -64,7 +31,7 @@
 
     communityCards.forEach(card => {
       const img = document.createElement('img');
-      img.src = `../img/cards/${card}.svg`;
+      img.src = `/img/cards/${card}.svg`;
       img.alt = card;
       communityDiv.appendChild(img);
     });
@@ -105,6 +72,3 @@
     betButton.addEventListener('click', () => {
       alert(`Du setzt ${betSlider.value} Chips!`);
     });
-  </script>
-</body>
-</html>
