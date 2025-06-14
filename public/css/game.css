@@ -18,14 +18,16 @@
             display: flex;  
             justify-content: center;   
             align-items: center;       
-            gap: 10px;         
-            padding: 10px;   
+            gap: 2%;         
+            padding: 10px;
+            flex-wrap: wrap; 
         }
 
     body {
       background-color: #1c1c1c;
       font-family: 'League Spartan', sans-serif;
       color: white;
+      margin-top: 10%;
     }
 
     .table {
@@ -78,9 +80,8 @@
 
     .player{
       width: 20%;
-      padding: 1%;
+      padding: 1.5%;
       position: relative;
-
     }
     #players div:nth-child(1) {
       

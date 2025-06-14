@@ -1,8 +1,12 @@
     const players = [
 
-
+      { user: 'user1',    cards: ['rueckseite', 'rueckseite', 'rueckseite', 'rueckseite', 'rueckseite'] },
+      { user: 'user2',    cards: ['rueckseite', 'rueckseite', 'rueckseite', 'rueckseite', 'rueckseite'] },
+      { user: 'user3',    cards: ['rueckseite', 'rueckseite', 'rueckseite', 'rueckseite', 'rueckseite'] },
+      { user: 'user4',    cards: ['rueckseite', 'rueckseite', 'rueckseite', 'rueckseite', 'rueckseite'] },
       { user: 'DU',    cards: ['herz 2', 'karo 3'] }
     ];
+    const self = 3
 
     players.forEach((player, index) => {
       const container = document.getElementById(`players`);
