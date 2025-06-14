@@ -23,13 +23,6 @@
             flex-wrap: wrap; 
         }
 
-    body {
-      background-color: #1c1c1c;
-      font-family: 'League Spartan', sans-serif;
-      color: white;
-      margin-top: 10%;
-    }
-
     .table {
       width: 700px;
       height: 400px;
