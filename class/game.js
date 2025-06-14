@@ -43,6 +43,7 @@ class Game {
     }
     start()
     {
+        
         this.dealCards();
     }
     getPlayerNames(usersMap) {

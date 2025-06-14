@@ -4,6 +4,7 @@ const path = require('path');
 const WebSocket = require('ws');
 const jwt = require('jsonwebtoken');
 const Game = require('./class/game');
+const { send } = require('process');
 
 const SECRET_KEY = 'dein_geheimer_schlüssel';
 const users = new Map();
@@ -50,6 +51,21 @@ wss.on('connection', (ws) => {
       users.set(newToken, { ws, name: null });
       ws.send(JSON.stringify({ type: 'token', token: newToken }));
       console.log("Nutzer beigetreten: "+ newToken);
+    
+    } else if(data.type === 'startGame'){
+      let lobby = getLobby(data.token);
+      if(!lobby){
+        ws.send(JSON.stringify({ type: 'error', message: 'Fehler: Lobby existiert nicht'}))
+        return;
+      }
+      game = games.get(lobby);
+      if(!(game.players[0].jwt === data.token)) {
+        ws.send(JSON.stringify({ type: 'error', message: 'Fehler: Keine Berechtigung'}))
+        return;
+      }
+      sendMessageToLobby(lobby, JSON.stringify({ type: 'redirect', path: 'game.html'}));
+      game.start();
+      
 
 
     } else if (data.type === 'init') { // Erstelle Lobby oder trete bestehender bei
