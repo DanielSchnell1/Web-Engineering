@@ -5,33 +5,21 @@ const WebSocket = require('ws');
 const jwt = require('jsonwebtoken');
 const Game = require('./class/game');
 const { send } = require('process');
+const express = require('express');
 
 const SECRET_KEY = 'dein_geheimer_schlüssel';
 const users = new Map();
 const games = new Map();
 
-const server = http.createServer((req, res) => {
-  let filePath;
-  if (req.url === '/' || req.url === '/index.html') { // Request URL
-    filePath = path.join(__dirname, '/html/index.html'); 
-  } else {
-    filePath = path.join(__dirname, req.url);
-  }
+const app = express();
+const server = http.createServer(app);
 
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
-      res.writeHead(404);
-      return res.end('Nicht gefunden');
-    }
-
-    let contentType = 'text/plain';
-    if (filePath.endsWith('.html')) contentType = 'text/html; charset=utf-8';
-    else if (filePath.endsWith('.js')) contentType = 'application/javascript';
-    else if (filePath.endsWith('.css')) contentType = 'text/css';
-
-    res.writeHead(200, { 'Content-Type': contentType });
-    res.end(data);
-  });
+app.use(express.static(path.join(__dirname, 'public')));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/html', 'index.html'));
+});
+app.use((req, res) => {
+  res.status(404).send('Nicht gefunden');
 });
 
 

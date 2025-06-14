@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Poker Game</title>
-  <link rel="stylesheet" href="../css/game.css" /> <!-- Pfad muss geändert werden (funktioniert nicht bei laufendem Server) -->
+  <link rel="stylesheet" href="/css/game.css" />
   <link href="https://fonts.googleapis.com/css2?family=League+Spartan&display=swap" rel="stylesheet" />
   <style>
     
@@ -47,7 +47,7 @@
 
       const cardsDiv = container.querySelector('.cards');
       player.cards.forEach((card, j) => {
-        const src = `../img/cards/${card}.svg`
+        const src = `/img/cards/${card}.svg`
         const img = document.createElement('img');
         img.src = src;
         img.alt = card;
@@ -64,7 +64,7 @@
 
     communityCards.forEach(card => {
       const img = document.createElement('img');
-      img.src = `../img/cards/${card}.svg`;
+      img.src = `/img/cards/${card}.svg`;
       img.alt = card;
       communityDiv.appendChild(img);
     });
