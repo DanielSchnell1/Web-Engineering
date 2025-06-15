@@ -20,9 +20,9 @@ function testEvaluateHand() {
     // Looping through all testcases
     testCases.forEach(test => {
         try {
-            const result = game.evaluateHand(test.hand);
+            const rank = game.evaluateHand(test.hand);
             // Suche nach dem ersten true-Wert im handRank-Array
-            const rank = result;
+            // const rank = result;
             
             if (rank == test.expectedRank) {
                 console.log(`✅ ${test.name} bestanden`);
