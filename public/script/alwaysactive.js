@@ -1,5 +1,6 @@
 let ws = new WebSocket(`ws://${location.host}`);
 let token = sessionStorage.getItem('jwt');
+let lobby = sessionStorage.getItem('lobby');
 
 ws.onopen = () => {
     if(!token)
@@ -25,5 +26,8 @@ ws.onmessage = (event) => {
     else if(data.type === 'redirect')
     {
         window.location.href = data.path;
+    } 
+    else if(data.type === 'getLobby'){
+        sessionStorage.setItem('lobby', data.lobby);
     }
 };

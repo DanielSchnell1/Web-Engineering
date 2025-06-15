@@ -102,7 +102,16 @@ document.querySelectorAll('img').forEach(img => {
 document.getElementById("drawButton").addEventListener("click", () => {
   ws.send(JSON.stringify({
     type: 'draw',
+    lobby: lobby,
     token: sessionStorage.getItem('jwt') || null,
     cards: drawCards
   }));
+});
+
+ws.addEventListener('open', () => {
+  ws.send(JSON.stringify({ type: 'getGameState', token: token, lobby: lobby}));
+});
+
+ws.addEventListener('message', (event) => {
+  console.log(JSON.parse(event.data)); // funktioniert bereits
 });
