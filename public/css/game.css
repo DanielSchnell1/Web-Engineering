@@ -7,10 +7,6 @@
             width: 30%;
             height: auto;
         }
-        .drag-over {
-            filter: drop-shadow(0 0 50px rgb(0, 0, 0));
-            transform: scale(1.05);
-        }
 
         .cards {
             background-color: rgb(67, 67, 77);
@@ -18,15 +14,10 @@
             display: flex;  
             justify-content: center;   
             align-items: center;       
-            gap: 10px;         
-            padding: 10px;   
+            gap: 2%;         
+            padding: 10px;
+            flex-wrap: wrap; 
         }
-
-    body {
-      background-color: #1c1c1c;
-      font-family: 'League Spartan', sans-serif;
-      color: white;
-    }
 
     .table {
       width: 700px;
@@ -36,17 +27,6 @@
       margin: 50px auto;
       position: relative;
       box-shadow: 0 0 40px rgba(0,0,0,0.6);
-    }
-
-    .top    { top: 10px; left: 50%; transform: translateX(-50%); }
-    .bottom { bottom: 10px; left: 50%; transform: translateX(-50%); }
-    .left   { top: 50%; left: 10px; transform: translateY(-50%); }
-    .right  { top: 50%; right: 10px; transform: translateY(-50%); }
-
-    .player {
-      position: absolute;
-      text-align: center;
-      width: 140px;
     }
 
     .playername {
@@ -80,4 +60,21 @@
       width: 60px;
       height: auto;
     }
+    #players{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 7%;
+    }
+
+    .player{
+      width: 20%;
+      padding: 1.5%;
+      position: relative;
+    }
+  .selected {
+    transform: scale(1.05); /* 10% größer */
+    transition: transform 0.3s ease;
+    box-shadow: 0 0 5px 2px rgb(166, 255, 0);
+  } 
     

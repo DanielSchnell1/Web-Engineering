@@ -4,8 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Poker Game</title>
+  <link rel="stylesheet" href="/css/alwaysactive.css" />
   <link rel="stylesheet" href="/css/game.css" />
   <link href="https://fonts.googleapis.com/css2?family=League+Spartan&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/pokerhands.css"/>
   <style>
     
   </style>
@@ -13,10 +15,10 @@
 <body>
 
   <div class="table" id="table">
-    <div class="player top"    id="player0"></div>
-    <div class="player left"   id="player1"></div>
-    <div class="player right"  id="player2"></div>
-    <div class="player bottom" id="player3"></div>
+    <div id="players">
+
+    </div>
+
 
     <div id="community" class="community-cards"></div>
   </div>
@@ -27,8 +29,20 @@
     <span id="betValue">500</span> Chips
     <br><br>
     <button id="betButton">Setzen</button>
+    <button id="drawButton">Karten tauschen</button>
   </div>
 
+
+      <dialog id="pokerhands">
+    <p>test</p>
+  </dialog>
+
+  <button onclick="fetch('/html/pokerhands.html').then(r=>r.text()).then(h=>{let d=document.getElementById('pokerhands');d.innerHTML=h;d.showModal();})"
+          style="bottom: 20px !important; right: 20px !important; position: fixed; width: 40px !important; height: 40px !important; border-radius: 15px; display: flex !important; align-items: center !important; justify-content: center !important;">
+    <span class="iconify" data-icon="mdi:cards-playing-outline" data-inline="false" style="font-size: 32px;"></span>
+  </button>
+
+    <script src="https://code.iconify.design/2/2.2.1/iconify.min.js"></script> 
   <script src="/script/alwaysactive.js"></script>
   <script src="/script/game.js">
 

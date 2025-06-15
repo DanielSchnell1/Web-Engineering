@@ -73,6 +73,7 @@ wss.on('connection', (ws) => {
             let lobby = generateLobbyCode();
             console.log(lobby);
             games.set(lobby, new Game(data.token));
+            ws.send(JSON.stringify({type: 'getLobby', lobby: lobby}));
             ws.send(JSON.stringify({ type: 'redirect', path: 'html/lobby.html'}));
 
         } else {                    //Fall 3: Nutzer schickt invaliden Lobbycode
@@ -90,10 +91,24 @@ wss.on('connection', (ws) => {
         user.ws = ws;
         users.set(data.token, user);
       }
+
+
     } else if (data.type === 'getLobbyState') {
       lobby = getLobby(data.token);
         ws.send(JSON.stringify({ type: 'lobby', users: games.get(lobby).getPlayerNames(users), code: lobby})); 
+    
+    
+    } else if(data.type === 'draw') {
+        console.log(data.cards);
+    
+
+
+    } else if(data.type === 'getGameState') {
+      let message = games.get(data.lobby).getGameState(data.token, users);
+      ws.send(message);
     }
+
+    
   });
 
 

@@ -1,0 +1,18 @@
+#lobbyDiv {
+  border: 2px solid #524f4f;
+  padding: 20px;
+  box-sizing: border-box;
+  background-color: #3c3c3c;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column; 
+  gap: 10px;             
+  align-items: center;  
+}
+
+#lobbyDiv * {
+    padding: 5% auto 5% auto;
+}
+#lobbyDiv *:hover{
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}

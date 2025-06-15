@@ -47,11 +47,21 @@ class Game {
         
         this.dealCards();
     }
-    getPlayerNames(usersMap) {
+    getPlayerNames(users) {
     return this.players
-        .map(player => usersMap.get(player.jwt))
+        .map(player => users.get(player.jwt))
         .filter(user => user && user.name)
         .map(user => user.name);
+    }
+    drawCards(jwt, cards){
+
+    }
+    getGameState(jwt, users){
+        const data = {type: 'getGameState', players: [] };
+        this.players.forEach(player => {
+            data.players.push({user: users.get(player.jwt).name, cards: player.cards});
+        })
+        return JSON.stringify(data);
     }
 
     //evaluates hand and returns handRank arry whith length 13. handRank[0] is true if hand is royal flush and so on.
