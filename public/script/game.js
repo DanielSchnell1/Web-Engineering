@@ -11,27 +11,34 @@
     ];
     const self = 3
 
-    players.forEach((player, index) => {
-      const container = document.getElementById(`players`);
-      container.innerHTML += `
-        <div class="player" style="top: ${600-200*Math.sqrt(10-20*(index/(players.length-1)-0.5)**2)}%;">
+    ws.addEventListener('message', (event) => {
+      let data = JSON.parse(event.data);
+      if(data.type === "getGameState"){
+        data.players.forEach((player, index) => {
+        const container = document.getElementById(`players`);
+        container.innerHTML += `
+        <div class="player" style="top: ${600-200*Math.sqrt(10-20*(index/(data.players.length-1)-0.5)**2)}%;">
           <div class="playername">${player.user}</div>
           <div class="cards" id="cards${index}"></div>
         </div>
-      `;
+        `;
 
-      player.cards.forEach((card, j) => {
+        player.cards.forEach((card, j) => {
         let cardsDiv = document.getElementById(`cards${index}`);
         const src = `/img/cards/${card}.svg`
         const img = document.createElement('img');
         img.src = src;
         img.alt = card;
         img.className = "card";
-        // img.setAttribute('draggable', 'true');
         img.id = `${index}_${j}`;
         cardsDiv.appendChild(img);
       });
     });
+      }
+    });
+
+
+    
 
     // Community Cards in der Mitte
     const communityCards = ['herz 10', 'pik 7', 'karo 2', 'karo dame', 'pik ass'];
@@ -112,6 +119,3 @@ ws.addEventListener('open', () => {
   ws.send(JSON.stringify({ type: 'getGameState', token: token, lobby: lobby}));
 });
 
-ws.addEventListener('message', (event) => {
-  console.log(JSON.parse(event.data)); // funktioniert bereits
-});

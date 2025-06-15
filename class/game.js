@@ -40,7 +40,7 @@ class Game {
         return deck;
     }
 
-    dealCards(cardsPerPlayer = 4) {
+    dealCards(cardsPerPlayer = 5) {
         for (const player of this.players) {
             player.cards = player.cards || [];
             for (let i = 0; i < cardsPerPlayer; i++) {
