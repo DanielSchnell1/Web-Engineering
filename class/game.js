@@ -1,10 +1,17 @@
+const {toArrayBuffer} = require('ws');
+const logger = require('../logger/logger');
+const {log} = require("winston");
+
+
+
 class Game {
+
     static cardNames = (() => {
         const suits = ['herz', 'karo', 'pik', 'kreuz'];
         const values = [
             '2', '3', '4', '5', '6', '7', '8', '9', '10',
             'bube', 'dame', 'koenig', 'ass'
-            ];
+        ];
         const cards = [];
         for (let suit of suits) {
             for (let value of values) {
@@ -20,9 +27,9 @@ class Game {
         this.addPlayer(jwt, null);
         this.deck = this.createShuffledDeck();
     }
-  
+
     addPlayer(jwt, cards = []) {
-        this.players.push({ jwt, cards });
+        this.players.push({jwt, cards});
     }
 
     createShuffledDeck() {
@@ -33,6 +40,7 @@ class Game {
         }
         return deck;
     }
+
     dealCards(cardsPerPlayer = 4) {
         for (const player of this.players) {
             player.cards = player.cards || [];
@@ -42,30 +50,35 @@ class Game {
             }
         }
     }
-    start()
-    {
-        
+
+    start() {
+
         this.dealCards();
     }
+
     getPlayerNames(users) {
-    return this.players
-        .map(player => users.get(player.jwt))
-        .filter(user => user && user.name)
-        .map(user => user.name);
+        return this.players
+            .map(player => users.get(player.jwt))
+            .filter(user => user && user.name)
+            .map(user => user.name);
     }
-    drawCards(jwt, cards){
+
+    drawCards(jwt, cards) {
 
     }
-    getGameState(jwt, users){
-        const data = {type: 'getGameState', players: [] };
+
+    getGameState(jwt, users) {
+        const data = {type: 'getGameState', players: []};
         this.players.forEach(player => {
             data.players.push({user: users.get(player.jwt).name, cards: player.cards});
         })
         return JSON.stringify(data);
     }
 
-    //evaluates hand and returns handRank arry whith length 13. handRank[0] is true if hand is royal flush and so on.
-    evaluateHand = (hand) => {
+    //input hand: ["herz 10", "herz bube", "herz dame", "herz koenig", "herz ass"] and gives out Hand Score
+    evaluateHand(hand) {
+        logger.info("Method evaluateHand called with hand: " + hand);
+
         const cardRanking = {'pik': 4, 'herz': 3, 'karo': 2, 'kreuz': 1};
         const valueRanking = {
             '2': 2,
@@ -83,105 +96,141 @@ class Game {
             'ass': 14
         };
 
-        // Selecting the card values and sorting them
-        const valuesHand = hand.map(hand => valueRanking[card.value].sort((a,b) => a -b));
+        const {cardTypes, cardValues} = extractCardInfo(hand);
 
-        //Selection Type of card
-        //"const cardType is maped and sorted with function given card (iteration variabel like python) selecting Card Type"
-        const cardType = hand.map(card => card.type.sort((a,b) => a -b));
-
-        //Finding identical Kard values
-        const valueCounts = {};
-        //iterating throug all cards. increment card value if found. Saved in const value count
-        values.forEach(value => valueCounts[value] = (valueCounts[value] || 0) + 1);
-
-
-        //Beginning to lookup Card Combinations
-
-        //"Sorting number of found equal cards"
-        const sortedCardCount = Object.values(valueCounts).sort((a,b) => a - b);
-
-        //Mapping boolean card checkt to resoult.
-        const handRank = [13];
-        for (let i = 0; i < handRank.length; i++) {
-            handRank[i] = false;
+        /**
+         * Splits the cards in hand into cardTypes and cardValues Arrays.
+         * @param hand
+         * @returns {{cardTypes: *[], cardValues: *[]}}
+         */
+        function extractCardInfo(hand) {
+            const cardTypes = [];
+            const cardValues = [];
+            for (const card of hand) {
+                const [type, value] = card.split(' ');
+                cardValues.push(valueRanking[value]);
+                cardTypes.push(cardRanking[type]);
+            }
+            logger.info("card Types split: " + cardTypes);
+            logger.info("Card Values split: " + cardValues);
+            return {cardTypes, cardValues};
         }
 
-        //checking object for equal card combinations
-        //Four of a Kind
-        handRank[2] = sortedCardCount[4] === 4;
-        //Three of a Kind
-        handRank[6] = sortedCardCount[0] === 3;
-        //Pair
-        handRank[8]= sortedCardCount[0] === 2;
-        //Two Pair
-        handRank[7] = sortedCardCount[0] === 2 && sortedCardCount[1] === 2;
-        //Full House
-        handRank[3]= sortedCardCount[0] === 2 && sortedCardCount[1] === 3;
+        /**
+         * Counts how many times each card value appears in cardValues,
+         * @param cardValues
+         * @returns Array of card values sorted by highest value first.
+         */
+        function countValuesSorted(cardValues) {
+            const countMap = {};
 
-        //Flush
-        //"Checking if every card has the same cardType. cardType[0] is not the actual comparison value because of fucking js syntax"
-        handRank[4]= cardType.every(card => card === cardType[0]);
-
-        handRank[5] = values => {
-            // Sort values in ascending order
-            values.sort((a, b) => a - b);
-
-            // Check for Ace-low straight (A,2,3,4,5)
-            if (values[0] === 2 && values[3] === 5 && values[4] === 14) {
-                values[4] = 1; // Treat Ace as 1
-                values.sort((a, b) => a - b);
+            for (const value of cardValues) {
+                countMap[value] = (countMap[value] || 0) + 1;
             }
 
-            // Check if values form a sequence
-            for (let i = 0; i < values.length - 1; i++) {
-                if (values[i + 1] - values[i] !== 1) {
-                    return false;
-                }
-            }
-            return true;
-        };
-
-        //Highest card in hand
-        handRank[13] = sortedCardCount[0] === 1;
-        //Royal Flush
-        handRank[0] = handRank[4] && handRank[5](valuesHand[0])&&valuesHand[0].includes(14)&&valuesHand[0].includes(10);
-
-        //Remove if handRank is done
-        let handrank = ' ';
-        switch (true) {
-            case isFlush && isStraight && values.includes(14) && values.includes(10):
-                handrank = "Royal Flush";
-                break;
-            case isFlush && isStraight:
-                handrank = "Straight Flush";
-                break;
-            case hasFourOfKind:
-                handrank = "Four of a Kind";
-                break;
-            case hasFullHouse:
-                handrank = "Full House";
-                break;
-            case isFlush:
-                handrank = "Flush";
-                break;
-            case isStraight:
-                handrank = "Straight";
-                break;
-            case hasThreeOfKind:
-                handrank = "Three of a Kind";
-                break;
-            case hasTwoPair:
-                handrank = "Two Pair";
-                break;
-            case hasPair:
-                handrank = "Pair";
-                break;
-            default:
-                handrank = "High Card";
+            //sorting found values as key value pairs
+            return Object.values(countMap).sort((a, b) => b - a);
         }
-        // Gibt die Kombination zurück
-        return handRank;
+
+        /**
+         * Counts how many times each card type appears in cardTypes,
+         * @param cardTypes
+         * @returns Array of card types sorted by highest type first.
+         */
+        function countTypeSorted(cardTypes) {
+            const countMap = {};
+
+            for (const type of cardTypes) {
+                countMap[type] = (countMap[type] || 0) + 1;
+            }
+
+            return Object.values(countMap).sort((a, b) => b - a);
+        }
+
+        /**
+         * Section checks the hand combinations
+         * @returns {boolean}
+         */
+        // const highCard = () => {}
+
+        const pairFunktion = () => countValuesSorted(cardValues)[0] === 2;
+        logger.info("PairFunkton result: " + pairFunktion());
+
+        // const twoPair = () => {}
+        //
+        // const threeOfAKind = () => {}
+        //
+        // const fourOfAKind = () => {}
+        //
+        // const flush = () => {};
+        //
+        // const fullHouse = () => {};
+        //
+        // const straight = () => {
+        //
+        // }
+        //
+        // const straightFlush = () => {}
+        //
+        // const royalFlush = () => {}
+
+        /**
+         * Section calculates the hand rank through switch case.
+         * @returns {number}
+         */
+        function getHandRank() {
+            let handRank;
+            switch (true) {
+                //order of cases is important, switching Pair before Full House leads to wrong result
+                // case fullHouse():
+                //     handRank = 60000;
+                //     break;
+                // case straightFlush():
+                //     handRank = 80000;
+                //     break;
+                // case royalFlush():
+                //     handRank = 90000;
+                //     break;
+                //
+                // case highCard():
+                //     handRank = 0;
+                case pairFunktion():
+                    handRank = 10000;
+                    break;
+                // case twoPair():
+                //     handRank = 20000;
+                //     break;
+                // case threeOfAKind():
+                //     handRank[1] = 30000;
+                //     break;
+                // case straight():
+                //     handRank = 40000;
+                //     break;
+                // case flush():
+                //     handRank = 50000;
+                //     break;
+                // case fourOfAKind():
+                //     handRank = 70000;
+                //     break;
+                default:
+                    handRank = null;
+                    break;
+            }
+            return handRank;
+
+        }
+
+        /**
+         * Evaluates hand besids spesific hand rank.
+         * @returns {null}
+         */
+        //To be implemented
+        function getHandMicroScore() {
+            return null
+        }
+
+        return getHandRank();
+
     }
 }
 
