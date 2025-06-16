@@ -68,8 +68,18 @@ class Game {
 
     getGameState(jwt, users) {
         const data = {type: 'getGameState', players: []};
-        this.players.forEach(player => {
-            data.players.push({user: users.get(player.jwt).name, cards: player.cards});
+        this.players.forEach((player, index) => {
+            if(jwt === player.jwt)
+            {
+                data.self = index;
+                data.players.push({
+                    user: users.get(player.jwt).name, 
+                    cards: player.cards});
+            } else {
+                data.players.push({
+                    user: users.get(player.jwt).name, 
+                    cards: Array(player.cards.length).fill("rueckseite")});
+            }
         })
         return JSON.stringify(data);
     }

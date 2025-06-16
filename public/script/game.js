@@ -1,39 +1,39 @@
     const drawCards = [];
-    
-    
-    const players = [
-
-      { user: 'user1',    cards: ['rueckseite', 'rueckseite', 'rueckseite', 'rueckseite', 'rueckseite'] },
-      { user: 'user2',    cards: ['rueckseite', 'rueckseite', 'rueckseite', 'rueckseite', 'rueckseite'] },
-      { user: 'user3',    cards: ['rueckseite', 'rueckseite', 'rueckseite', 'rueckseite', 'rueckseite'] },
-      { user: 'user4',    cards: ['rueckseite', 'rueckseite', 'rueckseite', 'rueckseite', 'rueckseite'] },
-      { user: 'DU',    cards: ['herz 2', 'karo 3'] }
-    ];
-    const self = 3
-
+  
     ws.addEventListener('message', (event) => {
       let data = JSON.parse(event.data);
       if(data.type === "getGameState"){
-        data.players.forEach((player, index) => {
-        const container = document.getElementById(`players`);
-        container.innerHTML += `
-        <div class="player" style="top: ${600-200*Math.sqrt(10-20*(index/(data.players.length-1)-0.5)**2)}%;">
-          <div class="playername">${player.user}</div>
-          <div class="cards" id="cards${index}"></div>
-        </div>
-        `;
-
-        player.cards.forEach((card, j) => {
-        let cardsDiv = document.getElementById(`cards${index}`);
-        const src = `/img/cards/${card}.svg`
-        const img = document.createElement('img');
-        img.src = src;
-        img.alt = card;
-        img.className = "card";
-        img.id = `${index}_${j}`;
-        cardsDiv.appendChild(img);
-      });
-    });
+        
+          data.players.forEach((player, index) => {
+            if(data.self != index) {
+              let container = document.getElementById(`players`);
+              container.innerHTML += `
+              <div class="player" style="top: ${600-200*Math.sqrt(10-20*(index/(data.players.length-1)-0.5)**2)}%;">
+                <div class="playername">${player.user}</div>
+                <div class="cards" id="cards${index}"></div>
+              </div>
+              `;
+            } else {
+              let container = document.getElementById(`self`);
+              container.innerHTML += `
+              <div class="player">
+                <div class="playername">${player.user}</div>
+                <div class="cards" id="cards${index}"></div> 
+              </div>
+              `;
+            }
+            player.cards.forEach((card, j) => {
+              let cardsDiv = document.getElementById(`cards${index}`);
+              const src = `/img/cards/${card}.svg`
+              const img = document.createElement('img');
+              img.src = src;
+              img.alt = card;
+              img.className = "card";
+              img.id = `${index}_${j}`;
+              cardsDiv.appendChild(img);
+            });
+          });
+        
       }
     });
 

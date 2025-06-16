@@ -67,13 +67,23 @@
       height: 7%;
     }
 
+    #self {
+      position: absolute;        
+      left: 50%;           
+      transform: translateX(-50%); 
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      bottom: -5%;
+    }
+
     .player{
       width: 20%;
       padding: 1.5%;
       position: relative;
     }
   .selected {
-    transform: scale(1.05); /* 10% größer */
+    transform: scale(1.05);
     transition: transform 0.3s ease;
     box-shadow: 0 0 5px 2px rgb(166, 255, 0);
   } 
