@@ -8,9 +8,44 @@ function testEvaluateHand() {
     const testCases = [
         {
             name: "Pair Test",
-            hand: ["herz 2", "herz 3", "herz 4", "herz 4", "herz 6"],
+            hand: ["kreuz 2", "herz 3", "pik 4", "herz 4", "herz 6"],
             expectedRank: 10000
         },
+        {
+            name: "Two Pair Test",
+            hand: ["herz 2", "herz 4", "karo 4", "herz 6", "karo 6"],
+            expectedRank: 20000
+        },
+        {
+            name: "Three of a Kind Test",
+            hand: ["herz bube", "herz 4", "herz 6", "pik 6", "herz 6"],
+            expectedRank: 30000
+        },
+        {
+            name: "Flush Test",
+            hand: ["herz 2", "herz ass", "herz 4", "herz 5", "herz 9"],
+            expectedRank: 50000
+        },
+        {
+            name: "Four of a Kind Test",
+            hand: ["herz 2", "herz 2", "karo 2", "herz 2", "pik 6"],
+            expectedRank: 70000
+        },
+        {
+            name: "Full House Test",
+            hand: ["kreuz 2", "herz 2", "pik 2", "herz 3", "karo 3"],
+            expectedRank: 60000
+        },
+        {
+            name: "High Card Test",
+            hand: ["herz 2", "herz 5", "pik 4", "karo ass", "herz 10"],
+            expectedRank: 0
+        },
+        {
+            name: "Straight Test",
+            hand: ["herz 2", "herz 3", "pik 4", "herz 5", "herz 6"],
+            expectedRank: 40000
+        }
     ];
 
     // Tests scores

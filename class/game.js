@@ -2,7 +2,6 @@ const {toArrayBuffer} = require('ws');
 const logger = require('../logger/logger');
 
 
-
 class Game {
 
     static cardNames = (() => {
@@ -160,23 +159,45 @@ class Game {
          * Section checks the hand combinations
          * @returns {boolean}
          */
-        // const highCard = () => {}
 
-        const pairFunktion = () => countValuesSorted(cardValues)[0] === 2;
+        const pairFunktion = () => countValuesSorted(cardValues).includes(2);
         logger.info("PairFunkton result: " + pairFunktion());
 
-        // const twoPair = () => {}
-        //
-        // const threeOfAKind = () => {}
-        //
-        // const fourOfAKind = () => {}
-        //
-        // const flush = () => {};
-        //
-        // const fullHouse = () => {};
-        //
-        // const straight = () => {
-        //
+        const twoPair = () => countValuesSorted(cardValues)[0] === 2 && countValuesSorted(cardValues)[1] === 2;
+        logger.info("TwoPair result: " + twoPair());
+
+        const threeOfAKind = () => countValuesSorted(cardValues)[0] === 3;
+        logger.info("ThreeOfAKind result: " + threeOfAKind());
+
+        const fourOfAKind = () => countValuesSorted(cardValues)[0] === 4;
+        logger.info("FourOfAKind result: " + fourOfAKind());
+
+        const flush = () => countTypeSorted(cardTypes)[0] === 5;
+        logger.info("Flush result: " + flush());
+
+        const fullHouse = () => pairFunktion() && threeOfAKind();
+        logger.info("FullHouse result: " + fullHouse());
+
+        const straight = () => {
+            const sortedCardValues = [...cardValues].sort((a, b) => b - a);
+            let testSum = 1
+            for (let i = 0; i < cardValues.length - 1; i++) {
+                if (sortedCardValues[i] - 1 === sortedCardValues[i + 1]) {
+                    testSum++;
+                }
+            }
+            if (testSum === 5) {
+                return true
+            } else {
+                return false
+            }
+
+        }
+        logger.info("Straight result: " + straight());
+
+        const highCard = () => countValuesSorted(cardValues)[0] === 1 && (!flush() && !straight());
+        logger.info("HighCard result: " + highCard());
+
         // }
         //
         // const straightFlush = () => {}
@@ -191,9 +212,9 @@ class Game {
             let handRank;
             switch (true) {
                 //order of cases is important, switching Pair before Full House leads to wrong result
-                // case fullHouse():
-                //     handRank = 60000;
-                //     break;
+                case fullHouse():
+                    handRank = 60000;
+                    break;
                 // case straightFlush():
                 //     handRank = 80000;
                 //     break;
@@ -201,26 +222,27 @@ class Game {
                 //     handRank = 90000;
                 //     break;
                 //
-                // case highCard():
-                //     handRank = 0;
+                case highCard():
+                    handRank = 0;
+                    break;
+                case twoPair():
+                    handRank = 20000;
+                    break;
                 case pairFunktion():
                     handRank = 10000;
                     break;
-                // case twoPair():
-                //     handRank = 20000;
-                //     break;
-                // case threeOfAKind():
-                //     handRank[1] = 30000;
-                //     break;
-                // case straight():
-                //     handRank = 40000;
-                //     break;
-                // case flush():
-                //     handRank = 50000;
-                //     break;
-                // case fourOfAKind():
-                //     handRank = 70000;
-                //     break;
+                case threeOfAKind():
+                    handRank = 30000;
+                    break;
+                case straight():
+                    handRank = 40000;
+                    break;
+                case flush():
+                    handRank = 50000;
+                    break;
+                case fourOfAKind():
+                    handRank = 70000;
+                    break;
                 default:
                     handRank = null;
                     break;
