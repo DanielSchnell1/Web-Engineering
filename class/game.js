@@ -1,6 +1,7 @@
 const {toArrayBuffer} = require('ws');
 const logger = require('../logger/logger');
 const {log} = require("winston");
+const e = require("express");
 
 
 class Game {
@@ -69,16 +70,17 @@ class Game {
     getGameState(jwt, users) {
         const data = {type: 'getGameState', players: []};
         this.players.forEach((player, index) => {
-            if(jwt === player.jwt)
-            {
+            if (jwt === player.jwt) {
                 data.self = index;
                 data.players.push({
-                    user: users.get(player.jwt).name, 
-                    cards: player.cards});
+                    user: users.get(player.jwt).name,
+                    cards: player.cards
+                });
             } else {
                 data.players.push({
-                    user: users.get(player.jwt).name, 
-                    cards: Array(player.cards.length).fill("rueckseite")});
+                    user: users.get(player.jwt).name,
+                    cards: Array(player.cards.length).fill("rueckseite")
+                });
             }
         })
         return JSON.stringify(data);
@@ -217,11 +219,27 @@ class Game {
         const highCard = () => countValuesSorted(cardValues)[0] === 1 && (!flush() && !straight());
         logger.info("HighCard result: " + highCard());
 
-        // }
-        //
-        // const straightFlush = () => {}
-        //
-        // const royalFlush = () => {}
+        const straightFlush = () => straight() && flush();
+        logger.info("StraightFlush result: " + straightFlush());
+
+        const royalFlush = () => {
+            const sortedCardValues = [...cardValues].sort((a, b) => b - a);
+            const royalRanks = [14, 13, 12, 11, 10];
+            logger.info("sortedCardValues" + sortedCardValues);
+
+            for (let i = 0; i < sortedCardValues.length - 1; i++) {
+                if (sortedCardValues[i] !== royalRanks[i]) {
+                    return false;
+                }
+            }
+            //Connecting the dotes. Final Test for Royal Flush
+            if (flush()) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        logger.info("RoyalFlush result: " + royalFlush());
 
         /**
          * Section calculates the hand rank through switch case.
@@ -231,18 +249,26 @@ class Game {
             let handRank;
             switch (true) {
                 //order of cases is important, switching Pair before Full House leads to wrong result
+                case royalFlush():
+                    handRank = 90000;
+                    break;
+                case straightFlush():
+                    handRank = 80000;
+                    break;
+                case fourOfAKind():
+                    handRank = 70000;
+                    break;
                 case fullHouse():
                     handRank = 60000;
                     break;
-                // case straightFlush():
-                //     handRank = 80000;
-                //     break;
-                // case royalFlush():
-                //     handRank = 90000;
-                //     break;
-                //
-                case highCard():
-                    handRank = 0;
+                case flush():
+                    handRank = 50000;
+                    break;
+                case straight():
+                    handRank = 40000;
+                    break;
+                case threeOfAKind():
+                    handRank = 30000;
                     break;
                 case twoPair():
                     handRank = 20000;
@@ -250,17 +276,8 @@ class Game {
                 case pairFunktion():
                     handRank = 10000;
                     break;
-                case threeOfAKind():
-                    handRank = 30000;
-                    break;
-                case straight():
-                    handRank = 40000;
-                    break;
-                case flush():
-                    handRank = 50000;
-                    break;
-                case fourOfAKind():
-                    handRank = 70000;
+                case highCard():
+                    handRank = 0;
                     break;
                 default:
                     handRank = null;

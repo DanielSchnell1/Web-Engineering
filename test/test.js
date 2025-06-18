@@ -50,6 +50,16 @@ function testEvaluateHand() {
             name: "Spetial Straight Test: Wheel",
             hand: ["karo 2", "herz 3", "pik 4", "pik 5", "herz ass"],
             expectedRank: 40000
+        },
+        {
+            name: "Straight Flush Test",
+            hand: ["herz 10", "herz 9", "herz 8", "herz 7", "herz 6"],
+            expectedRank: 80000
+        },
+        {
+            name: "Royal Flush Test",
+            hand: ["herz 10", "herz bube", "herz dame", "herz koenig", "herz ass" ],
+            expectedRank: 90000
         }
     ];
 
