@@ -45,6 +45,11 @@ function testEvaluateHand() {
             name: "Straight Test",
             hand: ["herz 2", "herz 3", "pik 4", "herz 5", "herz 6"],
             expectedRank: 40000
+        },
+        {
+            name: "Spetial Straight Test: Wheel",
+            hand: ["karo 2", "herz 3", "pik 4", "pik 5", "herz ass"],
+            expectedRank: 40000
         }
     ];
 

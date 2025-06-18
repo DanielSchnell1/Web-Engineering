@@ -1,5 +1,6 @@
 const {toArrayBuffer} = require('ws');
 const logger = require('../logger/logger');
+const {log} = require("winston");
 
 
 class Game {
@@ -180,18 +181,36 @@ class Game {
 
         const straight = () => {
             const sortedCardValues = [...cardValues].sort((a, b) => b - a);
-            let testSum = 1
-            for (let i = 0; i < cardValues.length - 1; i++) {
-                if (sortedCardValues[i] - 1 === sortedCardValues[i + 1]) {
-                    testSum++;
-                }
+            let testedForStraight = testStraight(sortedCardValues, sortedCardValues.length);
+
+            //check for special case wheel: A,2,3,4,5, if Ass is in hand
+            if (sortedCardValues.includes(14) && testedForStraight === false) {
+                //new car set: Ass is mapped in new Array as one
+                const sortedCardValuesSpecial = sortedCardValues.map(card => card === 14 ? 1 : card);
+                //sorting new Array as normal
+                sortedCardValuesSpecial.sort((a, b) => b - a);
+                testedForStraight = testStraight(sortedCardValuesSpecial, sortedCardValuesSpecial.length);
             }
-            if (testSum === 5) {
+
+            if (testedForStraight) {
                 return true
             } else {
                 return false
             }
 
+            function testStraight(cardArray, arrayLength) {
+                let testSum = 1
+                for (let i = 0; i < arrayLength - 1; i++) {
+                    if (cardArray[i] - 1 === cardArray[i + 1]) {
+                        testSum++;
+                    }
+                }
+                if (testSum === 5) {
+                    return true
+                } else {
+                    return false
+                }
+            }
         }
         logger.info("Straight result: " + straight());
 
