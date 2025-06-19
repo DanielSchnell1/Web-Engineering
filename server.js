@@ -2,10 +2,10 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const WebSocket = require('ws');
-const jwt = require('jsonwebtoken');
 const Game = require('./class/game');
 const { send } = require('process');
 const express = require('express');
+const { v4: uuidv4 } = require('uuid');
 
 const SECRET_KEY = 'dein_geheimer_schlüssel';
 const users = new Map();
@@ -35,10 +35,10 @@ wss.on('connection', (ws) => {
       return;
     }
     if (data.type === 'getToken'){
-      const newToken = jwt.sign({ timestamp: Date.now() }, SECRET_KEY);
-      users.set(newToken, { ws, name: null });
-      ws.send(JSON.stringify({ type: 'token', token: newToken }));
-      console.log("Nutzer beigetreten: "+ newToken);
+      const id = uuidv4();
+      users.set(id, { ws, name: null });
+      ws.send(JSON.stringify({ type: 'token', token: id }));
+      console.log("Nutzer beigetreten: "+ id);
     
     } else if(data.type === 'startGame'){
       let lobby = getLobby(data.token);
