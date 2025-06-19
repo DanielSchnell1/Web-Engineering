@@ -3,9 +3,9 @@ const Game = require('../class/game.js');
 function testEvaluateHand() {
     // Creating a new Game instance
     const game = new Game('test-jwt');
-    
+
     //Testcases saved in const array
-    const testCases = [
+    const testCasesEvaluateHand = [
         {
             name: "Pair Test",
             hand: ["kreuz 2", "herz 3", "pik 4", "herz 4", "herz 6"],
@@ -58,22 +58,30 @@ function testEvaluateHand() {
         },
         {
             name: "Royal Flush Test",
-            hand: ["herz 10", "herz bube", "herz dame", "herz koenig", "herz ass" ],
+            hand: ["herz 10", "herz bube", "herz dame", "herz koenig", "herz ass"],
             expectedRank: 90000
         }
+    ];
+
+    const testCasesBreakTie = [
+        {
+            name: "Test higher Pair",
+            hand: ['herz 10', 'pik 10', 'kreuz 10', 'karo 3', 'pik 2'],
+            expectedRank: 1010100302
+        },
     ];
 
     // Tests scores
     let passedTests = 0;
     let failedTests = 0;
 
-    // Looping through all testcases
-    testCases.forEach(test => {
+    //Looping through all testcases
+    testCasesEvaluateHand.forEach(test => {
         try {
             const rank = game.evaluateHand(test.hand);
             // Suche nach dem ersten true-Wert im handRank-Array
             // const rank = result;
-            
+
             if (rank == test.expectedRank) {
                 console.log(`✅ ${test.name} bestanden`);
                 passedTests++;
@@ -89,11 +97,33 @@ function testEvaluateHand() {
         }
     });
 
+    testCasesBreakTie.forEach(test => {
+        try {
+            const rank = game.getTieBreakerScore(test.hand);
+            // Suche nach dem ersten true-Wert im handRank-Array
+            // const rank = result;
+
+            if (rank == test.expectedRank) {
+                console.log(`✅ ${test.name} bestanden`);
+                passedTests++;
+            } else {
+                console.log(`❌ ${test.name} fehlgeschlagen`);
+                console.log(`   Erwartet: ${test.expectedRank}, Erhalten: ${rank}`);
+                failedTests++;
+            }
+        } catch (error) {
+            console.log(`❌❌ ${test.name} fehlgeschlagen mit Fehler:`);
+            console.log(` ${error.name}  ${error.message} ${error.stack}`);
+            failedTests++;
+        }
+    });
+
+
     //End summary
     console.log(`\nTest-Zusammenfassung:`);
     console.log(`Bestanden: ${passedTests}`);
     console.log(`Fehlgeschlagen: ${failedTests}`);
-    console.log(`Gesamt: ${testCases.length}`);
+    console.log(`Gesamt: ${testCasesEvaluateHand.length}`);
 }
 
 //Starting Test Class through construction

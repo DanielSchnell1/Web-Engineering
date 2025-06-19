@@ -86,96 +86,95 @@ class Game {
         return JSON.stringify(data);
     }
 
+    cardRanking = {'pik': 4, 'herz': 3, 'karo': 2, 'kreuz': 1};
+    valueRanking = {
+        '2': 2,
+        '3': 3,
+        '4': 4,
+        '5': 5,
+        '6': 6,
+        '7': 7,
+        '8': 8,
+        '9': 9,
+        '10': 10,
+        'bube': 11,
+        'dame': 12,
+        'koenig': 13,
+        'ass': 14
+    };
+
+    /**
+     * Splits the cards in hand into cardTypes and cardValues Arrays.
+     * @param hand
+     * @returns {{cardTypes: *[], cardValues: *[]}}
+     */
+    extractCardInfo(hand) {
+        const cardTypes = [];
+        const cardValues = [];
+        for (const card of hand) {
+            const [type, value] = card.split(' ');
+            cardValues.push(this.valueRanking[value]);
+            cardTypes.push(this.cardRanking[type]);
+        }
+        logger.info("card Types split: " + cardTypes);
+        logger.info("Card Values split: " + cardValues);
+        return {cardTypes, cardValues};
+    }
+
+    /**
+     * Counts how many times each card value appears in cardValues,
+     * @param cardValues
+     * @returns Array of card values sorted by highest value first.
+     */
+    countValuesSorted(cardValues) {
+        const countMap = {};
+
+        for (const value of cardValues) {
+            countMap[value] = (countMap[value] || 0) + 1;
+        }
+
+        //sorting found values as key value pairs
+        return Object.values(countMap).sort((a, b) => b - a);
+    }
+
+    /**
+     * Counts how many times each card type appears in cardTypes,
+     * @param cardTypes
+     * @returns Array of card types sorted by highest type first.
+     */
+    countTypeSorted(cardTypes) {
+        const countMap = {};
+
+        for (const type of cardTypes) {
+            countMap[type] = (countMap[type] || 0) + 1;
+        }
+
+        return Object.values(countMap).sort((a, b) => b - a);
+    }
+
     //input hand: ["herz 10", "herz bube", "herz dame", "herz koenig", "herz ass"] and gives out Hand Score
     evaluateHand(hand) {
         logger.info("Method evaluateHand called with hand: " + hand);
 
-        const cardRanking = {'pik': 4, 'herz': 3, 'karo': 2, 'kreuz': 1};
-        const valueRanking = {
-            '2': 2,
-            '3': 3,
-            '4': 4,
-            '5': 5,
-            '6': 6,
-            '7': 7,
-            '8': 8,
-            '9': 9,
-            '10': 10,
-            'bube': 11,
-            'dame': 12,
-            'koenig': 13,
-            'ass': 14
-        };
-
-        const {cardTypes, cardValues} = extractCardInfo(hand);
-
-        /**
-         * Splits the cards in hand into cardTypes and cardValues Arrays.
-         * @param hand
-         * @returns {{cardTypes: *[], cardValues: *[]}}
-         */
-        function extractCardInfo(hand) {
-            const cardTypes = [];
-            const cardValues = [];
-            for (const card of hand) {
-                const [type, value] = card.split(' ');
-                cardValues.push(valueRanking[value]);
-                cardTypes.push(cardRanking[type]);
-            }
-            logger.info("card Types split: " + cardTypes);
-            logger.info("Card Values split: " + cardValues);
-            return {cardTypes, cardValues};
-        }
-
-        /**
-         * Counts how many times each card value appears in cardValues,
-         * @param cardValues
-         * @returns Array of card values sorted by highest value first.
-         */
-        function countValuesSorted(cardValues) {
-            const countMap = {};
-
-            for (const value of cardValues) {
-                countMap[value] = (countMap[value] || 0) + 1;
-            }
-
-            //sorting found values as key value pairs
-            return Object.values(countMap).sort((a, b) => b - a);
-        }
-
-        /**
-         * Counts how many times each card type appears in cardTypes,
-         * @param cardTypes
-         * @returns Array of card types sorted by highest type first.
-         */
-        function countTypeSorted(cardTypes) {
-            const countMap = {};
-
-            for (const type of cardTypes) {
-                countMap[type] = (countMap[type] || 0) + 1;
-            }
-
-            return Object.values(countMap).sort((a, b) => b - a);
-        }
+        const {cardTypes, cardValues} = this.extractCardInfo(hand);
 
         /**
          * Section checks the hand combinations
          * @returns {boolean}
          */
-
-        const pairFunktion = () => countValuesSorted(cardValues).includes(2);
+        const pairFunktion = () => this.countValuesSorted(cardValues).includes(2);
         logger.info("PairFunkton result: " + pairFunktion());
 
-        const twoPair = () => countValuesSorted(cardValues)[0] === 2 && countValuesSorted(cardValues)[1] === 2;
+        const twoPair = () => this.countValuesSorted(cardValues)[0] === 2 && this.countValuesSorted(cardValues)[1] === 2;
         logger.info("TwoPair result: " + twoPair());
 
-        const threeOfAKind = () => countValuesSorted(cardValues)[0] === 3;
+        const threeOfAKind = () => this.countValuesSorted(cardValues)[0] === 3;
         logger.info("ThreeOfAKind result: " + threeOfAKind());
 
-        const fourOfAKind = () => countValuesSorted(cardValues)[0] === 4;
+        const fourOfAKind = () => this.countValuesSorted(cardValues)[0] === 4;
         logger.info("FourOfAKind result: " + fourOfAKind());
 
-        const flush = () => countTypeSorted(cardTypes)[0] === 5;
+        const flush = () => this.countTypeSorted(cardTypes)[0] === 5;
         logger.info("Flush result: " + flush());
 
         const fullHouse = () => pairFunktion() && threeOfAKind();
@@ -216,7 +215,7 @@ class Game {
         }
         logger.info("Straight result: " + straight());
 
-        const highCard = () => countValuesSorted(cardValues)[0] === 1 && (!flush() && !straight());
+        const highCard = () => this.countValuesSorted(cardValues)[0] === 1 && (!flush() && !straight());
         logger.info("HighCard result: " + highCard());
 
         const straightFlush = () => straight() && flush();
@@ -286,19 +285,36 @@ class Game {
             return handRank;
 
         }
-
-        /**
-         * Evaluates hand besids spesific hand rank.
-         * @returns {null}
-         */
-        //To be implemented
-        function getHandMicroScore() {
-            return null
-        }
-
         return getHandRank();
-
     }
+
+
+    /**
+     * Method to calculate the tie breaker score.
+     * The score is the sorted hand "hast" as compairabel number
+     * @param hand
+     * @returns {number}
+     */
+    getTieBreakerScore(hand) {
+        const cardValue = this.extractCardInfo(hand).cardValues;
+
+        cardValue.sort((a, b) => b - a);
+
+        //Creating unique number of card hand to compare with
+        let stringKonkatCardValue = "";
+        for (let i = 0; i < cardValue.length; i++) {
+            if (cardValue[i] < 10){
+                stringKonkatCardValue += "0"+cardValue[i].toString();
+            }else{
+                stringKonkatCardValue += cardValue[i].toString();
+            }
+
+        }
+        logger.info("Card Value as String after conkat: " + stringKonkatCardValue );
+        const score = Number(stringKonkatCardValue)
+        return score;
+    }
+
 }
 
 module.exports = Game;
