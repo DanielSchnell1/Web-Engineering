@@ -1,34 +1,125 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lobby</title>
-    <link rel="stylesheet" href="/css/alwaysactive.css" />
-    <link rel="stylesheet" href="/css/lobby.css" />
-    <link rel="stylesheet" href="/css/pokerhands.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lobby</title>
+  <link rel="stylesheet" href="/css/alwaysactive.css" />
+  <link rel="stylesheet" href="/css/lobby.css" />
+  <link rel="stylesheet" href="/css/pokerhands.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'League Spartan', sans-serif;
+      background: radial-gradient(circle, #2b1f1a, #1a1411); /* warm bräunlich */
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    #lobbyDiv {
+      background-color: #2c2c2c;
+      border: 2px solid #444;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      width: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    #code {
+      font-size: 1.2em;
+      text-align: center;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      background-color: #1a1a1a;
+      color: #52b78b; /* Heller Grünton */
+      width: 100%;
+    }
+
+    #userList {
+      list-style: none;
+      padding: 10px;
+      width: 100%;
+      background-color: #1a1a1a;
+      border-radius: 8px;
+      border: 1px solid #444;
+      color: white;
+    }
+
+    #userList li {
+      padding: 6px;
+      border-bottom: 1px solid #333;
+    }
+
+    #start {
+      background-color: #236644;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      color: white;
+      font-size: 1em;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    #start:hover {
+      background-color: #1f5639;
+    }
+
+    button.dialogBtn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      border: none;
+      background-color: #444;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    dialog {
+      background-color: #2e2e2e;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 20px;
+    }
+  </style>
 </head>
 <body>
-    <h1>Lobby</h1>
-    <div id="lobbyDiv">
-        <input id="code" type="text" value="LOBBYCODE" readonly>
-        <ul id="userList"> 
-        </ul>
-        <input id="start" type="button" value="Spiel starten">
-    </div>
-    
+  <h1>Lobby</h1>
+  <div id="lobbyDiv">
+    <input id="code" type="text" value="LOBBYCODE" readonly>
+    <ul id="userList"></ul>
+    <input id="start" type="button" value="Spiel starten">
+  </div>
 
-    <dialog id="pokerhands">
+  <dialog id="pokerhands">
     <p>test</p>
   </dialog>
 
-  <button onclick="fetch('/html/pokerhands.html').then(r=>r.text()).then(h=>{let d=document.getElementById('pokerhands');d.innerHTML=h;d.showModal();})"
-          style="bottom: 20px !important; right: 20px !important; position: fixed; width: 40px !important; height: 40px !important; border-radius: 15px; display: flex !important; align-items: center !important; justify-content: center !important;">
-    <span class="iconify" data-icon="mdi:cards-playing-outline" data-inline="false" style="font-size: 32px;"></span>
+  <button class="dialogBtn"
+    onclick="fetch('/html/pokerhands.html').then(r=>r.text()).then(h=>{let d=document.getElementById('pokerhands');d.innerHTML=h;d.showModal();})">
+    <span class="iconify" data-icon="mdi:cards-playing-outline" style="font-size: 26px;"></span>
   </button>
 
-    <script src="https://code.iconify.design/2/2.2.1/iconify.min.js"></script> 
-    <script src="/script/alwaysactive.js"></script>
-    <script src="/script/lobby.js"></script>
+  <script src="https://code.iconify.design/2/2.2.1/iconify.min.js"></script>
+  <script src="/script/alwaysactive.js"></script>
+  <script src="/script/lobby.js"></script>
 </body>
 </html>
