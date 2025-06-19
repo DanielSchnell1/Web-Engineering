@@ -1,3 +1,6 @@
+document.getElementById('code').value = sessionStorage.getItem('lobby');
+
+
 ws.addEventListener("message", (event) => {
     const data = JSON.parse(event.data);
     if (data.type === "lobby" && Array.isArray(data.users)) {
@@ -10,7 +13,7 @@ ws.addEventListener("message", (event) => {
         li.textContent = username;
         userListElement.appendChild(li);
       });
-      document.getElementById('code').value = data.code;
+
     }
 });
 ws.addEventListener('open', () => {

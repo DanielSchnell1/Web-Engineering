@@ -65,7 +65,7 @@ wss.on('connection', (ws) => {
           users.set(data.token, user);
           games.get(data.lobby).addPlayer(data.token);
           ws.send(JSON.stringify({ type: 'redirect', path: 'html/lobby.html'}));
-          sendMessageToLobby(data.lobby, JSON.stringify({ type: 'lobby', users: games.get(data.lobby).getPlayerNames(users), code: data.lobby})); 
+          sendMessageToLobby(data.lobby, JSON.stringify({ type: 'lobby', users: games.get(data.lobby).getPlayerNames(users)})); 
           console.log(games.get(data.lobby).getPlayerNames(users));
           
         } else if (!data.lobby){    //Fall 2: Nutzer schickt kein Lobbycode
