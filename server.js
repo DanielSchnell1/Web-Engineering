@@ -18,6 +18,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/html', 'index.html'));
 });
+app.get('/:html/:lobbyId', (req, res) => {
+  if(!games.has(req.params.lobbyId))
+  {
+    res.status(404).send('Lobby nicht gefunden');
+  }
+  res.sendFile(path.join(__dirname, 'public/html', `${req.params.html}.html`));
+});
+
 app.use((req, res) => {
   res.status(404).send('Nicht gefunden');
 });
@@ -26,8 +34,10 @@ app.use((req, res) => {
 const wss = new WebSocket.Server({ server });
 
 wss.on('connection', (ws) => {
+
   let userToken = null;
   ws.on('message', (message) => {
+    try {
     let data;
     try {
       data = JSON.parse(message);
@@ -51,7 +61,7 @@ wss.on('connection', (ws) => {
         ws.send(JSON.stringify({ type: 'error', message: 'Fehler: Keine Berechtigung'}))
         return;
       }
-      sendMessageToLobby(lobby, JSON.stringify({ type: 'redirect', path: 'game.html'}));
+      sendMessageToLobby(lobby, JSON.stringify({ type: 'redirect', path: `/game/${lobby}`}));
       game.start();
       
 
@@ -64,7 +74,7 @@ wss.on('connection', (ws) => {
         if(games.has(data.lobby)) { //Fall 1: Nutzer schickt validen Lobbycode
           users.set(data.token, user);
           games.get(data.lobby).addPlayer(data.token);
-          ws.send(JSON.stringify({ type: 'redirect', path: 'html/lobby.html'}));
+          ws.send(JSON.stringify({ type: 'redirect', path: `lobby/${data.lobby}`}));
           sendMessageToLobby(data.lobby, JSON.stringify({ type: 'lobby', users: games.get(data.lobby).getPlayerNames(users)})); 
           console.log(games.get(data.lobby).getPlayerNames(users));
           
@@ -74,7 +84,7 @@ wss.on('connection', (ws) => {
             console.log(lobby);
             games.set(lobby, new Game(data.token));
             ws.send(JSON.stringify({type: 'getLobby', lobby: lobby}));
-            ws.send(JSON.stringify({ type: 'redirect', path: 'html/lobby.html'}));
+            ws.send(JSON.stringify({ type: 'redirect', path: `lobby/${lobby}`}));
 
         } else {                    //Fall 3: Nutzer schickt invaliden Lobbycode
           ws.send(JSON.stringify({ type: 'error', message: 'Fehler: Lobby existiert nicht'}))
@@ -108,7 +118,8 @@ wss.on('connection', (ws) => {
       ws.send(message);
     }
 
-    
+  } catch(e){
+  }
   });
 
 
@@ -122,6 +133,8 @@ wss.on('connection', (ws) => {
       }, 10000);
     }
   });
+
+  
 });
 
 
