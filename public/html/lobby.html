@@ -105,9 +105,17 @@
 <body>
   <h1>Lobby</h1>
   <div id="lobbyDiv">
-    <input id="code" type="text" value="LOBBYCODE" readonly>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <input id="code" type="text" value="LOBBYCODE" readonly style="flex: 1;">
+      <button id="copyBtn" title="Code kopieren">
+        <span class="iconify" data-icon="mdi:content-copy" style="font-size: 20px;"></span>
+      </button>
+    </div>
     <ul id="userList"></ul>
-    <input id="start" type="button" value="Spiel starten">
+    <form id="loginForm">
+      <input type="text" name="username" placeholder="Name" required>
+      <input type="submit" value="Beitreten">
+    </form>
   </div>
 
   <dialog id="pokerhands">

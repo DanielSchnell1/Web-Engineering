@@ -10,18 +10,45 @@
   align-items: center;  
 }
 
-#userList{
-      border: 1px solid #505050;
-      background-color: #2c2c2c;
-      border-radius: 5px;
-      color: white;
-      width: 80%;
-      list-style-type: none;
-      padding-left: 2px;
-      margin: 0;
+#userList li {
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  background-color: #2c2c2c;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
+
+#userList li:hover {
+  background-color: #3c3c3c;
+}
+
+.user-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #444;
+  margin-right: 10px;
+}
+
 #code {
     width: 80%;
     font-size: 100%;
+}
+
+#copyBtn {
+  background-color: #2aaa43;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  color: white;
+  transition: background-color 0.2s ease;
+}
+
+#copyBtn:hover {
+  background-color: #218f3a;
 }
 
