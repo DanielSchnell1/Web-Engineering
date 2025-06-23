@@ -44,7 +44,7 @@
       border-radius: 8px;
       padding: 8px 12px;
       background-color: #1a1a1a;
-      color: #52b78b; /* Heller Grünton */
+      color: #52b78b; 
       width: 100%;
     }
 
@@ -105,17 +105,9 @@
 <body>
   <h1>Lobby</h1>
   <div id="lobbyDiv">
-    <div style="display: flex; gap: 8px; align-items: center;">
-      <input id="code" type="text" value="LOBBYCODE" readonly style="flex: 1;">
-      <button id="copyBtn" title="Code kopieren">
-        <span class="iconify" data-icon="mdi:content-copy" style="font-size: 20px;"></span>
-      </button>
-    </div>
+    <input id="code" type="text" value="LOBBYCODE" readonly>
     <ul id="userList"></ul>
-    <form id="loginForm">
-      <input type="text" name="username" placeholder="Name" required>
-      <input type="submit" value="Beitreten">
-    </form>
+    <input id="start" type="button" value="Spiel starten">
   </div>
 
   <dialog id="pokerhands">

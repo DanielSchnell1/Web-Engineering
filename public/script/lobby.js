@@ -24,14 +24,3 @@ start = document.getElementById("start");
 start.addEventListener('click', () => {
   ws.send(JSON.stringify({ type: 'startGame', token: token }));
 });
-
-const copyBtn = document.getElementById("copyBtn");
-copyBtn?.addEventListener("click", () => {
-  const input = document.getElementById("code");
-  navigator.clipboard.writeText(input.value).then(() => {
-    copyBtn.innerHTML = <span class="iconify" data-icon="mdi:check" style="font-size: 20px;"></span>;
-    setTimeout(() => {
-      copyBtn.innerHTML = <span class="iconify" data-icon="mdi:content-copy" style="font-size: 20px;"></span>;
-    }, 1000);
-  });
-});
