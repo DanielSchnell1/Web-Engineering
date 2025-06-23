@@ -27,6 +27,9 @@ ws.onmessage = (event) => {
     {
         window.location.href = data.path;
     } 
+    else if(data.type === 'replace') {
+        window.location.replace(data.path); 
+    }
     else if(data.type === 'getLobby'){
         sessionStorage.setItem('lobby', data.lobby);
     }

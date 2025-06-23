@@ -61,7 +61,7 @@ wss.on('connection', (ws) => {
         ws.send(JSON.stringify({ type: 'error', message: 'Fehler: Keine Berechtigung'}))
         return;
       }
-      sendMessageToLobby(lobby, JSON.stringify({ type: 'redirect', path: `/game/${lobby}`}));
+      sendMessageToLobby(lobby, JSON.stringify({ type: 'replace', path: `/game/${lobby}`}));
       game.start();
       
 

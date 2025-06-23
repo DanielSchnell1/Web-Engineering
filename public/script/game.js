@@ -30,6 +30,17 @@
               img.alt = card;
               img.className = "card";
               img.id = `${index}_${j}`;
+              img.addEventListener('click', () => {
+                const id = img.id;
+                if (img.classList.contains('selected')) {
+                  img.classList.remove('selected');
+                  const index = drawCards.indexOf(id);
+                  if (index > -1) drawCards.splice(index, 1);
+                } else {
+                  img.classList.add('selected');
+                  drawCards.push(id);
+                }
+              });
               cardsDiv.appendChild(img);
             });
           });
@@ -51,28 +62,6 @@
       communityDiv.appendChild(img);
     });
 
-    // Drag & Drop
-
-
-    // images.forEach(img => {
-    //   img.addEventListener('dragstart', e => {
-    //     move[0] = e.target.id;
-    //   });
-    //   img.addEventListener('dragover', e => {
-    //     e.preventDefault();
-    //     img.classList.add("drag-over");
-    //   });
-    //   img.addEventListener('dragleave', () => {
-    //     img.classList.remove("drag-over");
-    //   });
-    //   img.addEventListener('drop', e => {
-    //     e.preventDefault();
-    //     img.classList.remove("drag-over");
-    //     move[1] = e.target.id;
-    //     console.log("Karten-Move: ", move);
-    //     move = [];
-    //   });
-    // });
 
     // Einsatzanzeige
     const betSlider = document.getElementById('bet');
@@ -87,24 +76,6 @@
       alert(`Du setzt ${betSlider.value} Chips!`);
     });
 
-
-
-
-
-document.querySelectorAll('img').forEach(img => {
-  img.addEventListener('click', () => {
-    const id = img.id;
-
-    if (img.classList.contains('selected')) {
-      img.classList.remove('selected');
-      const index = drawCards.indexOf(id);
-      if (index > -1) drawCards.splice(index, 1);
-    } else {
-      img.classList.add('selected');
-      drawCards.push(id);
-    }
-  });
-});
 
 document.getElementById("drawButton").addEventListener("click", () => {
   ws.send(JSON.stringify({
