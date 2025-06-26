@@ -2,6 +2,21 @@
   
     ws.addEventListener('message', (event) => {
       let data = JSON.parse(event.data);
+      
+      
+    if (data.currentPlayer !== undefined) {
+        document.getElementById("currentPlayer").textContent = "aktueller Spieler: " + data.currentPlayer;
+    }
+    if (data.currentBet !== undefined) {
+        document.getElementById("currentBet").textContent = "Einsatz: " + data.currentBet;
+    }
+    if (data.currentPot !== undefined) {
+        document.getElementById("currentPot").textContent = "Pot: " + data.currentPot;
+    }
+    if (data.currentRound !== undefined) {
+        document.getElementById("currentRound").textContent = data.currentRound;
+    }
+
 
 
       if(data.type === "drawCards"){
@@ -25,10 +40,6 @@
       }
 
       if(data.type === "getGameState"){
-        console.log(data.currentPlayer);
-        document.getElementById("currentPlayer").textContent = "aktueller Spieler: " + data.currentPlayer;
-        document.getElementById("currentBet").textContent = "Einsatz: " + data.currentBet;
-        document.getElementById("currentPot").textContent = "Pot: " + data.currentPot;
           data.players.forEach((player, index) => {
             if(data.self != index) {
               let container = document.getElementById(`players`);
@@ -95,10 +106,6 @@
 
     betSlider.addEventListener('input', () => {
       betValue.textContent = betSlider.value;
-    });
-
-    betButton.addEventListener('click', () => {
-      alert(`Du setzt ${betSlider.value} Chips!`);
     });
 
 

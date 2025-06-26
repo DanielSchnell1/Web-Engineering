@@ -1,8 +1,28 @@
+//EDIT: passen als Option hinzufügen!!! -> players.active: Boolean zum überprüfen, ob ein Spieler aktiv ist
+//EDIT: optional: Validierung, ob eigene Karten getauscht werden (kein Sicherheitsrisiko, aber Anzeigefehler)
+//EDIT: Zweiten Spielstapel anlegen um getauschte Karten zu speichern. die getauschten Karten wieder mischeln und als neues `deck` verwenden, falls `deck` leer ist
+//EDIT: Frontend anpassen: Es müssen 'players.balance', angezeigt werden und betSlider braucht einen minimal Wert: getCurrentBet() und einen maximal Wert: player.balance.
+
+
 const logger = require('../logger/logger');
 
 
 class Game {
 
+    //Die erste und die dritte Runde sind Setzrunden
+    static betRounds = [0, 2];
+    
+    //Die zweite Runde ist eine Tauschrunde
+    static drawRounds = [1];
+
+    //DELETE, wenn nicht fertig: Statt betRounds & drawRounds
+    //Gibt den Spielablauf an:
+    //0 -> Setzrunde
+    //1 -> Tauschrunde
+    //2 -> Spielende
+    static rounds = [0, 1, 0, 2]
+
+    //anlegen eines sortierten Kartendecks
     static cardNames = (() => {
         const suits = ['herz', 'karo', 'pik', 'kreuz'];
         const values = [
@@ -18,19 +38,23 @@ class Game {
         return cards;
     })();
 
-    //Construction of Player
+    //Construction of Game
     constructor(jwt, name) {
         this.players = [];
         this.addPlayer(jwt, name);
-        this.deck = this.createShuffledDeck();
+        this.deck = null;
         this.currentPlayer = 0;
+        this.currentRound = 0;
+        this.betNoRepeat = true;    // Gibt an, ob eine Setzrunde noch nicht wiederholt wurde
     }
 
+    //Spieler zum Game hinzufügen
     addPlayer(jwt, name, cards = [], balance= 100, active = true, bet = 0) {
         this.players.push({"jwt": jwt, "name": name, "cards": cards, "balance": balance, "active": active, "bet": bet});
         console.log(this.players);
     }
 
+    //Gibt ein Gemischeltes Deck zurück
     createShuffledDeck() {
         const deck = [...Game.cardNames];
         for (let i = deck.length - 1; i > 0; i--) {
@@ -39,7 +63,13 @@ class Game {
         }
         return deck;
     }
+    
+    //Wandelt die Rundennummer in einen String um
+    getRoundName(index){
+        return ['1. Setzrunde', 'Tauschrunde', '2. Setzrunde'][index];
+    }
 
+    //Teilt jedem Spieler (standardmäßig) 5 Karten aus
     dealCards(cardsPerPlayer = 5) {
         for (const player of this.players) {
             player.cards = player.cards || [];
@@ -50,11 +80,20 @@ class Game {
         }
     }
 
+    //Wird beim Rundenstart ausgeführt, um Variablen zurückzusetzen
     start() {
-
+        this.currentPlayer = 0;
+        this.currentRound = 0;
+        this.deck = this.createShuffledDeck();
+        this.players.forEach((player)=>{
+            player.active = true;
+            player.balance -= this.bet;
+            player.bet = 5;
+        });
         this.dealCards();
     }
 
+    //Gibt ein Array aller Spielernamen zurück
     getPlayerNames(users) {
         return this.players
             .map(player => users.get(player.jwt))
@@ -62,33 +101,105 @@ class Game {
             .map(user => user.name);
     }
 
+    //Verarbeitet Tausch Zug, speichert Daten in players.cards ab und gibt message für Spieler zurück
     drawCards(playerId, cardIds) {
-        console.log(this.players);
-        let player = this.players.find(p => p.jwt === playerId);
+
+        let index = this.players.findIndex(p => p.jwt === playerId);
+        let player = this.players[index];
+
+
+        if(!player.active ||    
+            this.currentPlayer != index || 
+            !Game.drawRounds.includes(this.currentRound))
+        {
+            console.log("unzulässiger Tausch")
+            return;
+        }
+        
         cardIds.forEach((cardId) => {
             const cardIndex = parseInt(cardId.match(/^\d+_(\d+)$/)[1], 10);
             player.cards[cardIndex] = this.deck.pop();
         });
+        this.updateCurrentPlayer();
         return JSON.stringify({type: "drawCards", cards: player.cards});
     }
 
+    // Validiert Setz Zug, speichert Daten in players.bet / players.active ab und gibt message für Spieler zurück.
     bet(playerId, bet, fold = false){
+        let index = this.players.findIndex(p => p.jwt === playerId);
+        let player = this.players[index];
+
         if(fold) {
+            player.active = false;
             return;
         }
-        let player = this.players.find(p => p.jwt === playerId);
-        if(bet - player.bet >= 10)
+
+        //Validiere Input
+        //EDIT: falls Spieler weniger balance hat, als nötig, ist ihm erlaubt alles zu setzen
+        if(!player.active ||    
+            bet-player.bet < 10 || 
+            this.currentPlayer != index || 
+            bet > player.balance ||
+            !Game.betRounds.includes(this.currentRound) ||
+            this.getCurrentBet()>bet)
         {
-            player.bet = bet;
+            console.log("unzulässiger Einsatz")
+            return;
         }
-        console.log(player.bet, bet);
+
+        player.bet = bet;
+        console.log(player.bet);
+        this.updateCurrentPlayer();
+        return JSON.stringify({ // type ist ein empty String, da die untenstehenden Variablen jedesmal aktualisiert werden.
+            "type": "",
+            "currentPlayer": this.getCurrentPlayer(),
+            "currentBet": this.getCurrentBet(),
+            "currentPot": this.getCurrentPot(),
+            "currentRound": this.getRoundName(this.currentRound)
+        });
     }
 
+    //EDIT: Spielende muss noch hinzugefügt werden.
+    //Berechnet den Index des nächsten Spieler
+    updateCurrentPlayer(){ 
+        this.currentPlayer = (this.currentPlayer+1) % this.players.length;
+
+        if(this.currentPlayer == 0){
+            this.betNoRepeat = false;
+        }
+
+
+        //beendet die Tausch/Setzrunde erst, wenn Alle Einsätze gleich sind.
+        if(this.players.every(p => p.bet === this.players[0].bet && (!this.betNoRepeat || this.currentPlayer == 0))) {
+            this.currentRound = this.currentRound+1;
+            if(!this.betNoRepeat)
+            {
+                this.betNoRepeat = true;
+                this.currentPlayer = 0;
+            } 
+        }
+    }
+
+    //Gibt die Summe aller Einsätze zurück (den Pot)
+    getCurrentPot(){
+        return this.players.reduce((sum, player) => sum + parseInt(player.bet, 10), 0);
+    }
+    //Gibt den höchsten aller Einsätze zurück
+    getCurrentBet(){
+        return Math.max(...this.players.map(player => player.bet));
+    }
+    //Gibt den Namen des aktuellen Spielers zurück
+    getCurrentPlayer(){
+        return this.players[this.currentPlayer].name;
+    }
+
+    //Gibt dem Spieler die variablen Daten zurück die zum rendern der game.html nötig sind 
     getGameState(jwt, users) {
         const data = {"type": 'getGameState', players: [], 
-            "currentPlayer": this.players[this.currentPlayer].name,
-            "currentBet": Math.max(...this.players.map(player => player.bet)),
-            "currentPot": this.players.reduce((sum, player) => sum + parseInt(player.bet, 10), 0)};
+            "currentPlayer": this.getCurrentPlayer(),
+            "currentBet": this.getCurrentBet(),
+            "currentPot": this.getCurrentPot(),
+            "currentRound": this.getRoundName(this.currentRound)};
         this.players.forEach((player, index) => {
             if (jwt === player.jwt) {
                 data.self = index;

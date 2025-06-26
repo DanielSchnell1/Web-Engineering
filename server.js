@@ -1,13 +1,19 @@
+//EDIT: Server mit npm start starten
+//EDIT: optional: Authentifizierung hinzufügen
+//EDIT: jwt & Token umbennenen in userId oder mit jwt Authentifizierung
+//EDIT: Mehrfaches starten des SPiels verhindern
+//EDIT: optional: joinen nach Spielstart ermöglichen -> Spieler mit players.active=false hinzufügen & gamelogik entsprechend anpassen
+//EDIT: Dokumentation: README.md schreiben
+//EDIT: kicken von Spielern sowohl in Lobby, als auch in Game ermöglichen und UI entsprechend anpassen
+
 const http = require('http');
-const fs = require('fs');
 const path = require('path');
 const WebSocket = require('ws');
 const Game = require('./class/game');
-const { send } = require('process');
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 
-const SECRET_KEY = 'dein_geheimer_schlüssel';
+//EDIT: optional: users als static nach game auslagern
 const users = new Map();
 const games = new Map();
 
@@ -61,8 +67,9 @@ wss.on('connection', (ws) => {
         ws.send(JSON.stringify({ type: 'error', message: 'Fehler: Keine Berechtigung'}))
         return;
       }
-      sendMessageToLobby(lobby, JSON.stringify({ type: 'replace', path: `/game/${lobby}`}));
       game.start();
+      sendMessageToLobby(lobby, JSON.stringify({ type: 'replace', path: `/game/${lobby}`}));
+      
       
 
 
@@ -112,12 +119,16 @@ wss.on('connection', (ws) => {
       let game = games.get(data.lobby);
       let message = game.drawCards(data.token, data.cards);
       ws.send(message);
-      sendMessageToLobby(data.lobby, JSON.stringify({type: "pulse", cards: data.cards}));
+      sendMessageToLobby(data.lobby, JSON.stringify({
+        "type": "pulse", 
+        "cards": data.cards, 
+        "currentPlayer": game.getCurrentPlayer(),
+        "currentRound": game.getRoundName(game.currentRound)}));
       
     } else if(data.type === 'bet') {
       let game = games.get(data.lobby);
-      game.bet(data.token, data.bet, data.fold);
-
+      message = game.bet(data.token, data.bet, data.fold);
+      sendMessageToLobby(data.lobby, message);
 
     } else if(data.type === 'getGameState') {
       let message = games.get(data.lobby).getGameState(data.token, users);
