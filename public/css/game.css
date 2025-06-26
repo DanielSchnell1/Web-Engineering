@@ -18,6 +18,19 @@
           animation: pulse 0.4s ease;
         }
 
+        #display{
+          display: block;
+          border: 1px solid #333;
+          width: 30%;
+          height: auto;
+          font-size: 25px;
+          justify-content: center;
+          align-items: center;
+        }
+
+        p{
+          margin: 0px;
+        }
 
         .cards {
           background-color: #1a1a1a;

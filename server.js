@@ -73,7 +73,7 @@ wss.on('connection', (ws) => {
         user.name = data.name;
         if(games.has(data.lobby)) { //Fall 1: Nutzer schickt validen Lobbycode
           users.set(data.token, user);
-          games.get(data.lobby).addPlayer(data.token);
+          games.get(data.lobby).addPlayer(data.token, user.name);
           ws.send(JSON.stringify({ type: 'redirect', path: `lobby/${data.lobby}`}));
           sendMessageToLobby(data.lobby, JSON.stringify({ type: 'lobby', users: games.get(data.lobby).getPlayerNames(users)})); 
           console.log(games.get(data.lobby).getPlayerNames(users));
@@ -82,7 +82,7 @@ wss.on('connection', (ws) => {
           users.set(data.token, user);
             let lobby = generateLobbyCode();
             console.log(lobby);
-            games.set(lobby, new Game(data.token));
+            games.set(lobby, new Game(data.token, user.name));
             ws.send(JSON.stringify({type: 'getLobby', lobby: lobby}));
             ws.send(JSON.stringify({ type: 'redirect', path: `lobby/${lobby}`}));
 
@@ -114,7 +114,9 @@ wss.on('connection', (ws) => {
       ws.send(message);
       sendMessageToLobby(data.lobby, JSON.stringify({type: "pulse", cards: data.cards}));
       
-    
+    } else if(data.type === 'bet') {
+      let game = games.get(data.lobby);
+      game.bet(data.token, data.bet, data.fold);
 
 
     } else if(data.type === 'getGameState') {

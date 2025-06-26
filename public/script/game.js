@@ -25,7 +25,10 @@
       }
 
       if(data.type === "getGameState"){
-        
+        console.log(data.currentPlayer);
+        document.getElementById("currentPlayer").textContent = "aktueller Spieler: " + data.currentPlayer;
+        document.getElementById("currentBet").textContent = "Einsatz: " + data.currentBet;
+        document.getElementById("currentPot").textContent = "Pot: " + data.currentPot;
           data.players.forEach((player, index) => {
             if(data.self != index) {
               let container = document.getElementById(`players`);
@@ -105,6 +108,15 @@ document.getElementById("drawButton").addEventListener("click", () => {
     lobby: lobby,
     token: sessionStorage.getItem('jwt') || null,
     cards: drawCards
+  }));
+});
+
+document.getElementById("betButton").addEventListener("click", () => {
+  ws.send(JSON.stringify({
+    type: 'bet',
+    lobby: lobby,
+    token: sessionStorage.getItem('jwt') || null,
+    bet: document.getElementById("bet").value
   }));
 });
 

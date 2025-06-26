@@ -19,14 +19,16 @@ class Game {
     })();
 
     //Construction of Player
-    constructor(jwt) {
+    constructor(jwt, name) {
         this.players = [];
-        this.addPlayer(jwt, null);
+        this.addPlayer(jwt, name);
         this.deck = this.createShuffledDeck();
+        this.currentPlayer = 0;
     }
 
-    addPlayer(jwt, cards = []) {
-        this.players.push({jwt, cards});
+    addPlayer(jwt, name, cards = [], balance= 100, active = true, bet = 0) {
+        this.players.push({"jwt": jwt, "name": name, "cards": cards, "balance": balance, "active": active, "bet": bet});
+        console.log(this.players);
     }
 
     createShuffledDeck() {
@@ -68,11 +70,25 @@ class Game {
             player.cards[cardIndex] = this.deck.pop();
         });
         return JSON.stringify({type: "drawCards", cards: player.cards});
-        
+    }
+
+    bet(playerId, bet, fold = false){
+        if(fold) {
+            return;
+        }
+        let player = this.players.find(p => p.jwt === playerId);
+        if(bet - player.bet >= 10)
+        {
+            player.bet = bet;
+        }
+        console.log(player.bet, bet);
     }
 
     getGameState(jwt, users) {
-        const data = {type: 'getGameState', players: []};
+        const data = {"type": 'getGameState', players: [], 
+            "currentPlayer": this.players[this.currentPlayer].name,
+            "currentBet": Math.max(...this.players.map(player => player.bet)),
+            "currentPot": this.players.reduce((sum, player) => sum + parseInt(player.bet, 10), 0)};
         this.players.forEach((player, index) => {
             if (jwt === player.jwt) {
                 data.self = index;
