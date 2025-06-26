@@ -1,3 +1,8 @@
+        body, input, button, h1, h2, h3, p {
+          font-family: initial;
+        }
+        
+        
         img:hover {
             transform: scale(1.05);
         }
@@ -9,31 +14,18 @@
         }
 
         @keyframes pulse {
-          0%   { transform: scale(1); }
-          50%  { transform: scale(1.1); }
-          100% { transform: scale(1); }
+            0% {transform: scale(1);}
+            50% {transform: scale(1.1);}
+            100% {transform: scale(1);}
         }
 
         .pulse {
           animation: pulse 0.4s ease;
         }
 
-        #display{
-          display: block;
-          border: 1px solid #333;
-          width: 30%;
-          height: auto;
-          font-size: 25px;
-          justify-content: center;
-          align-items: center;
-        }
-
-        p{
-          margin: 0px;
-        }
+    
 
         .cards {
-          background-color: #1a1a1a;
           border-radius: 10px;
           display: flex;
           justify-content: center;
@@ -60,7 +52,6 @@
 
     .playername {
         color: whitesmoke;
-        font-family: 'League Spartan', sans-serif;
         font-size: 170%;
         font-weight: bold;
         margin-bottom: 5px;
@@ -114,6 +105,6 @@
   .selected {
     transform: scale(1.05);
     transition: transform 0.3s ease;
-    box-shadow: 0 0 5px 2px rgb(166, 255, 0);
+    box-shadow: 0 0 5px 2px #a6ff00;
   } 
     

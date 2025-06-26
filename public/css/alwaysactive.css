@@ -1,6 +1,9 @@
+    body, input, button, h1, h2, h3, p {
+      font-family: initial;
+    }
+    
     body {
       background-color: #1c1c1c;
-      font-family: 'League Spartan', sans-serif;
       color: white;
       margin-top: 10%;
       justify-content: center;

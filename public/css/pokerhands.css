@@ -1,3 +1,7 @@
+    body, input, button, h1, h2, h3, p {
+      font-family: initial;
+    }
+    
     #pokerhands{
       color:white;
       border: none;
@@ -9,14 +13,12 @@
     #pokerhands button {
       color:whitesmoke;
       margin-top: 10px;
-      background-color: rgb(82, 82, 224);
+      background-color: #4a8c3f;
       border-radius: 5px;
       border-width: 0px;
       height: 25px;
     }
-    #pokerhands button:hover{
-        background-color: rgb(74, 74, 202);
-    }
+    
     #pokerhands .circle{
     width: 50px;
       height: 50px;
@@ -31,11 +33,9 @@
     }
 
     #pokerhands .hand {
-        font-family: 'Great Vibes', cursive;
         font-weight: normal;
         font-style: normal;
         font-size: 150%;
-
         
     }
     #pokerhands img.hand{
