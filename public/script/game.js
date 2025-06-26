@@ -13,6 +13,17 @@
       }
 
 
+      if(data.type === "pulse"){
+        data.cards.forEach(id => {
+        const img = document.getElementById(id);
+            img.classList.add('pulse');
+            img.addEventListener('animationend', function handler() {
+            img.classList.remove('pulse');
+            img.removeEventListener('animationend', handler);
+          });
+        });
+      }
+
       if(data.type === "getGameState"){
         
           data.players.forEach((player, index) => {

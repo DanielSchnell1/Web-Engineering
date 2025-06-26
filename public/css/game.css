@@ -8,6 +8,17 @@
             height: auto;
         }
 
+        @keyframes pulse {
+          0%   { transform: scale(1); }
+          50%  { transform: scale(1.1); }
+          100% { transform: scale(1); }
+        }
+
+        .pulse {
+          animation: pulse 0.4s ease;
+        }
+
+
         .cards {
           background-color: #1a1a1a;
           border-radius: 10px;

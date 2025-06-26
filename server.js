@@ -109,8 +109,10 @@ wss.on('connection', (ws) => {
     
     
     } else if(data.type === 'draw') {
-      let message = games.get(data.lobby).drawCards(data.token, data.cards);
+      let game = games.get(data.lobby);
+      let message = game.drawCards(data.token, data.cards);
       ws.send(message);
+      sendMessageToLobby(data.lobby, JSON.stringify({type: "pulse", cards: data.cards}));
       
     
 
@@ -121,6 +123,7 @@ wss.on('connection', (ws) => {
     }
 
   } catch(e){
+    console.log(e)
   }
   });
 
