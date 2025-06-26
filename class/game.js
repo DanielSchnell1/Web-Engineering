@@ -1,7 +1,4 @@
-const {toArrayBuffer} = require('ws');
 const logger = require('../logger/logger');
-const {log} = require("winston");
-const e = require("express");
 
 
 class Game {
@@ -63,8 +60,15 @@ class Game {
             .map(user => user.name);
     }
 
-    drawCards(jwt, cards) {
-
+    drawCards(playerId, cardIds) {
+        console.log(this.players);
+        let player = this.players.find(p => p.jwt === playerId);
+        cardIds.forEach((cardId) => {
+            const cardIndex = parseInt(cardId.match(/^\d+_(\d+)$/)[1], 10);
+            player.cards[cardIndex] = this.deck.pop();
+        });
+        return JSON.stringify({type: "drawCards", cards: player.cards});
+        
     }
 
     getGameState(jwt, users) {

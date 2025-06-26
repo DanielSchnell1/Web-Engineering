@@ -109,7 +109,9 @@ wss.on('connection', (ws) => {
     
     
     } else if(data.type === 'draw') {
-        console.log(data.cards);
+      let message = games.get(data.lobby).drawCards(data.token, data.cards);
+      ws.send(message);
+      
     
 
 

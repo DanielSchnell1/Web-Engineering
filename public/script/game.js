@@ -2,6 +2,17 @@
   
     ws.addEventListener('message', (event) => {
       let data = JSON.parse(event.data);
+
+
+      if(data.type === "drawCards"){
+        console.log("test");
+        const imgs = document.querySelectorAll('#self .cards img');
+        data.cards.forEach((card, index)=>{
+          imgs[index].src = `/img/cards/${data.cards[index]}.svg`
+        });
+      }
+
+
       if(data.type === "getGameState"){
         
           data.players.forEach((player, index) => {
