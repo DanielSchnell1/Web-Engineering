@@ -47,14 +47,13 @@ class Game {
         this.deck = null;
         this.currentPlayer = 0;
         this.currentRound = 0;
-        this.score = 0;
         this.betNoRepeat = true;    // Gibt an, ob eine Setzrunde noch nicht wiederholt wurde
         logger.info("Game.js: Constructed Game");
     }
 
     //Spieler zum Game hinzufügen mit all seinen Variablen
-    addPlayer(jwt, name, cards = [], balance= 100, active = true, bet = 0, score = 0 ) {
-        this.players.push({"jwt": jwt, "name": name, "cards": cards, "balance": balance, "active": active, "bet": bet, "score": score});
+    addPlayer(jwt, name, cards = [], balance= 100, active = true, bet = 0 ) {
+        this.players.push({"jwt": jwt, "name": name, "cards": cards, "balance": balance, "active": active, "bet": bet});
         logger.info(("Game.js: Player added: " + name));
     }
 
@@ -198,26 +197,6 @@ class Game {
         }
     }
 
-
-    // gameEnd(){
-    //     let highScore = 0;
-    //     let highetsScoringPlayer = null;
-    //
-    //     this.players.forEach(player => {
-    //         logger.info("game.js: Player: "+ player.name + " Cards: " + player.cards);
-    //         player.score = this.evaluateHand(player.cards);
-    //         logger.info("game.js: player:" + player.name + "Score: " + player.score);
-    //
-    //         if(player.score > highScore){
-    //             highScore = player.score;
-    //             highetsScoringPlayer = player;
-    //         }
-    //     })
-    //
-    //     logger.info("game.js: Game Ended. Highscore: " + highScore + " by player: " + highetsScoringPlayer.name);
-    //     return highetsScoringPlayer.name
-    // }
-
     gameEnd(){
         let highScore = 0;
         let highScoringPlayers = [];
@@ -226,17 +205,16 @@ class Game {
         this.players.forEach(player => {
             const score = this.evaluateHand(player.cards);
 
-            if(score >= highScore){
+            if(score > highScore){
                 highScore = score;
                 highScoringPlayers = [player];  // Neuer Highscore → Liste neu starten
-            } else if(player.score === highScore){
+            } else if(score === highScore){
                 highScoringPlayers.push(player);  // Gleichstand → Spieler zur Liste hinzufügen
             }
         });
 
         // Wenn nur ein Spieler den höchsten Score hat
         if (highScoringPlayers.length === 1) {
-            logger.info("game.js: Game Ended. Winner: " + highScoringPlayers[0].name + " with Score: " + highScore);
             winner = highScoringPlayers[0];
         }else {
             // Tie-Breaker notwendig
@@ -250,27 +228,22 @@ class Game {
                 if (tieBreakerScore > bestTieBreakerScore) {
                     bestTieBreakerScore = tieBreakerScore;
                     winner = player;
-                    this.setWinningPotToWinner(winner);
                 }
             }
         }
-
-        logger.info("game.js: Tie-Break resolved. Winner: " + winner.name);
+        logger.info("game.js: Winner: " + winner.name);
+        this.setWinningPotToWinner(winner);
+        setTimeout(() => {
+            logger.info("game.js: Starting new Game");
+            this.start()
+        }, 3000);
     }
 
     setWinningPotToWinner(winner){
         const pot = this.getCurrentPot()
         winner.balance += pot
         logger.info("game.js: Paying Winner the pot: " + pot)
-
-        logger.info("game.js: Resetting all Players bets")
-        this.players.forEach(player => {
-            player.bet = 0
-        })
-    }
-
-    restGame () {
-
+        logger.info("game.js: Winner balance: " + winner.balance)
     }
 
 
