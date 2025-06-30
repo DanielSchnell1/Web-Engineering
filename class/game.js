@@ -193,28 +193,86 @@ class Game {
 
         if(this.currentRound === 3){
             this.gameEnd()
-        }        //Implementieren der Methode für Spiel ende
+
+            //neue Runde Starten
+        }
     }
 
+
+    // gameEnd(){
+    //     let highScore = 0;
+    //     let highetsScoringPlayer = null;
+    //
+    //     this.players.forEach(player => {
+    //         logger.info("game.js: Player: "+ player.name + " Cards: " + player.cards);
+    //         player.score = this.evaluateHand(player.cards);
+    //         logger.info("game.js: player:" + player.name + "Score: " + player.score);
+    //
+    //         if(player.score > highScore){
+    //             highScore = player.score;
+    //             highetsScoringPlayer = player;
+    //         }
+    //     })
+    //
+    //     logger.info("game.js: Game Ended. Highscore: " + highScore + " by player: " + highetsScoringPlayer.name);
+    //     return highetsScoringPlayer.name
+    // }
 
     gameEnd(){
         let highScore = 0;
-        let highetsScoringPlayer = null;
+        let highScoringPlayers = [];
+        let winner = null;
 
         this.players.forEach(player => {
-            logger.info("game.js: Player: "+ player.name + " Cards: " + player.cards);
-            player.score = this.evaluateHand(player.cards);
-            logger.info("game.js: player:" + player.name + "Score: " + player.score);
+            const score = this.evaluateHand(player.cards);
 
-            if(player.score > highScore){
-                highScore = player.score;
-                highetsScoringPlayer = player;
+            if(score >= highScore){
+                highScore = score;
+                highScoringPlayers = [player];  // Neuer Highscore → Liste neu starten
+            } else if(player.score === highScore){
+                highScoringPlayers.push(player);  // Gleichstand → Spieler zur Liste hinzufügen
             }
-        })
+        });
 
-        logger.info("game.js: Game Ended. Highscore: " + highScore + " by player: " + highetsScoringPlayer.name);
-        return highetsScoringPlayer.name
+        // Wenn nur ein Spieler den höchsten Score hat
+        if (highScoringPlayers.length === 1) {
+            logger.info("game.js: Game Ended. Winner: " + highScoringPlayers[0].name + " with Score: " + highScore);
+            winner = highScoringPlayers[0];
+        }else {
+            // Tie-Breaker notwendig
+            winner = highScoringPlayers[0];
+            let bestTieBreakerScore = this.getTieBreakerScore(winner.cards);
+
+            for (let i = 1; i < highScoringPlayers.length; i++) {
+                const player = highScoringPlayers[i];
+                const tieBreakerScore = this.getTieBreakerScore(player.cards);
+
+                if (tieBreakerScore > bestTieBreakerScore) {
+                    bestTieBreakerScore = tieBreakerScore;
+                    winner = player;
+                    this.setWinningPotToWinner(winner);
+                }
+            }
+        }
+
+        logger.info("game.js: Tie-Break resolved. Winner: " + winner.name);
     }
+
+    setWinningPotToWinner(winner){
+        const pot = this.getCurrentPot()
+        winner.balance += pot
+        logger.info("game.js: Paying Winner the pot: " + pot)
+
+        logger.info("game.js: Resetting all Players bets")
+        this.players.forEach(player => {
+            player.bet = 0
+        })
+    }
+
+    restGame () {
+
+    }
+
 
     //Gibt die Summe aller Einsätze zurück (den Pot)
     getCurrentPot(){
@@ -249,7 +307,7 @@ class Game {
                     cards: Array(player.cards.length).fill("rueckseite")
                 });
             }
-            logger.info("games.js: Startet Game. Set all Game Variables. Set corresponding cards for player");
+            logger.info("game.js: Startet Game. Set all Game Variables. Set corresponding cards for player");
         })
         return JSON.stringify(data);
     }
@@ -284,8 +342,8 @@ class Game {
             cardValues.push(this.valueRanking[value]);
             cardTypes.push(this.cardRanking[type]);
         }
-        logger.info("games.js: card Types split: " + cardTypes);
-        logger.info("games.js: Card Values split: " + cardValues);
+        logger.info("game.js: card Types split: " + cardTypes);
+        logger.info("game.js: Card Values split: " + cardValues);
         return {cardTypes, cardValues};
     }
 
@@ -322,7 +380,7 @@ class Game {
 
     //input hand: ["herz 10", "herz bube", "herz dame", "herz koenig", "herz ass"] and gives out Hand Score
     evaluateHand(hand) {
-        logger.info("games.js: Method evaluateHand called with hand: " + hand);
+        logger.info("game.js: Method evaluateHand called with hand: " + hand);
 
         const {cardTypes, cardValues} = this.extractCardInfo(hand);
 
@@ -331,22 +389,22 @@ class Game {
          * @returns {boolean}
          */
         const pairFunktion = () => this.countValuesSorted(cardValues).includes(2);
-        logger.info("games.js: PairFunkton result: " + pairFunktion());
+        logger.info("game.js: PairFunkton result: " + pairFunktion());
 
         const twoPair = () => this.countValuesSorted(cardValues)[0] === 2 && this.countValuesSorted(cardValues)[1] === 2;
-        logger.info("games.js: TwoPair result: " + twoPair());
+        logger.info("game.js: TwoPair result: " + twoPair());
 
         const threeOfAKind = () => this.countValuesSorted(cardValues)[0] === 3;
-        logger.info("games.js: ThreeOfAKind result: " + threeOfAKind());
+        logger.info("game.js: ThreeOfAKind result: " + threeOfAKind());
 
         const fourOfAKind = () => this.countValuesSorted(cardValues)[0] === 4;
-        logger.info("games.js: FourOfAKind result: " + fourOfAKind());
+        logger.info("game.js: FourOfAKind result: " + fourOfAKind());
 
         const flush = () => this.countTypeSorted(cardTypes)[0] === 5;
-        logger.info("games.js: Flush result: " + flush());
+        logger.info("game.js: Flush result: " + flush());
 
         const fullHouse = () => pairFunktion() && threeOfAKind();
-        logger.info("games.js: FullHouse result: " + fullHouse());
+        logger.info("game.js: FullHouse result: " + fullHouse());
 
         const straight = () => {
             const sortedCardValues = [...cardValues].sort((a, b) => b - a);
@@ -381,13 +439,13 @@ class Game {
                 }
             }
         }
-        logger.info("games.js: Straight result: " + straight());
+        logger.info("game.js: Straight result: " + straight());
 
         const highCard = () => this.countValuesSorted(cardValues)[0] === 1 && (!flush() && !straight());
-        logger.info("games.js: HighCard result: " + highCard());
+        logger.info("game.js: HighCard result: " + highCard());
 
         const straightFlush = () => straight() && flush();
-        logger.info("games.js: StraightFlush result: " + straightFlush());
+        logger.info("game.js: StraightFlush result: " + straightFlush());
 
         const royalFlush = () => {
             const sortedCardValues = [...cardValues].sort((a, b) => b - a);
@@ -405,7 +463,7 @@ class Game {
                 return false;
             }
         }
-        logger.info("games.js: RoyalFlush result: " + royalFlush());
+        logger.info("game.js: RoyalFlush result: " + royalFlush());
 
         /**
          * Section calculates the hand rank through switch case.
