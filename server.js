@@ -1,10 +1,5 @@
-//EDIT: Server mit npm start starten
-//EDIT: optional: Authentifizierung hinzufügen
-//EDIT: jwt & Token umbennenen in userId oder mit jwt Authentifizierung
 //EDIT: Mehrfaches starten des SPiels verhindern
-//EDIT: optional: joinen nach Spielstart ermöglichen -> Spieler mit players.active=false hinzufügen & gamelogik entsprechend anpassen
 //EDIT: Dokumentation: README.md schreiben
-//EDIT: kicken von Spielern sowohl in Lobby, als auch in Game ermöglichen und UI entsprechend anpassen
 
 const http = require('http');
 const path = require('path');
@@ -12,6 +7,8 @@ const WebSocket = require('ws');
 const Game = require('./class/game');
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
+const logger = require('./logger/logger');
+const {Logger} = require("winston");
 
 //EDIT: optional: users als static nach game auslagern
 const users = new Map();
@@ -54,6 +51,7 @@ wss.on('connection', (ws) => {
       const id = uuidv4();
       users.set(id, { ws, name: null });
       ws.send(JSON.stringify({ type: 'token', token: id }));
+      //logger.log("Server.js: Nutzer beigetreten, called data.type === getToken" + id.toString());
       console.log("Nutzer beigetreten: "+ id);
     
     } else if(data.type === 'startGame'){
@@ -62,12 +60,14 @@ wss.on('connection', (ws) => {
         ws.send(JSON.stringify({ type: 'error', message: 'Fehler: Lobby existiert nicht'}))
         return;
       }
+      //Nur spieler 0 ist berechtigt das Spiel zu starten
       game = games.get(lobby);
       if(!(game.players[0].jwt === data.token)) {
         ws.send(JSON.stringify({ type: 'error', message: 'Fehler: Keine Berechtigung'}))
         return;
       }
       game.start();
+      logger.info('Server.js:  called Spiel gestartet. data.type === startGame' + game);
       sendMessageToLobby(lobby, JSON.stringify({ type: 'replace', path: `/game/${lobby}`}));
       
       
@@ -82,9 +82,11 @@ wss.on('connection', (ws) => {
           users.set(data.token, user);
           games.get(data.lobby).addPlayer(data.token, user.name);
           ws.send(JSON.stringify({ type: 'redirect', path: `lobby/${data.lobby}`}));
+          //update an die Lobby mit neuem Spieler
           sendMessageToLobby(data.lobby, JSON.stringify({ type: 'lobby', users: games.get(data.lobby).getPlayerNames(users)})); 
+          logger.info("Server.js: ")
           console.log(games.get(data.lobby).getPlayerNames(users));
-          
+
         } else if (!data.lobby){    //Fall 2: Nutzer schickt kein Lobbycode
           users.set(data.token, user);
             let lobby = generateLobbyCode();
@@ -99,7 +101,6 @@ wss.on('connection', (ws) => {
       } else {
         ws.send(JSON.stringify({ type: 'error', message: 'Fehler: Kein Benutzername'}))
       }
-
 
     } else if (data.type === 'ws') {
       if(users.has(data.token))
@@ -165,12 +166,14 @@ function logUsers() {
   }
   console.log('----------------------------');
 }
-function sendMessageToLobby(lobby, JSON) {
 
+//Übermittelt eine JSON-Nachricht an alle Spieler in der Lobby
+function sendMessageToLobby(lobby, JSON) {
   games.get(lobby).players.forEach(user => {
     users.get(user.jwt).ws.send(JSON);
   });
 }
+
 function getLobby(token){
   for (const [lobbyCode, game] of games.entries()) {
     if (game.players.some(player => player.jwt === token)) {
@@ -195,8 +198,37 @@ function generateLobbyCode() {
 
 
 
+
+
+
+
+
+
+
 // Server starten
-const PORT = 8080;
+const PORT = 1234;
 server.listen(PORT, () => {
   console.log(`Server läuft auf http://localhost:${PORT}`);
 });
+
+//Server herunterfahren
+// Shutdown-Signale abfangen: STRG+C oder Kill-Befehl
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
+
+function shutdown() {
+  console.log('\n🛑 Server wird heruntergefahren...');
+
+  // 1. HTTP-Server stoppen - nimmt keine neuen Verbindungen mehr an
+  server.close(() => {
+    console.log('📴 HTTP-Server wurde geschlossen.');
+  });
+
+  setTimeout(() => {
+    console.log('👋 Prozess wird beendet.');
+    process.exit(0);
+  }, 1000);
+}
+
+
+

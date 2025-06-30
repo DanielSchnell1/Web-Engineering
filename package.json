@@ -1,6 +1,26 @@
 {
+  "name": "web-engineering",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DanielSchnell1/Web-Engineering.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DanielSchnell1/Web-Engineering/issues"
+  },
+  "homepage": "https://github.com/DanielSchnell1/Web-Engineering#readme",
+  "description": "",
   "dependencies": {
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "uuid": "^11.1.0",
     "winston": "^3.17.0",
     "ws": "^8.18.2"

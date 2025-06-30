@@ -5,6 +5,7 @@
 
 
 const logger = require('../logger/logger');
+const {log} = require("winston");
 
 
 class Game {
@@ -35,6 +36,7 @@ class Game {
                 cards.push(`${suit} ${value}`);
             }
         }
+        logger.info("Game.js: created Card Deck");
         return cards;
     })();
 
@@ -45,13 +47,15 @@ class Game {
         this.deck = null;
         this.currentPlayer = 0;
         this.currentRound = 0;
+        this.score = 0;
         this.betNoRepeat = true;    // Gibt an, ob eine Setzrunde noch nicht wiederholt wurde
+        logger.info("Game.js: Constructed Game");
     }
 
-    //Spieler zum Game hinzufügen
-    addPlayer(jwt, name, cards = [], balance= 100, active = true, bet = 0) {
-        this.players.push({"jwt": jwt, "name": name, "cards": cards, "balance": balance, "active": active, "bet": bet});
-        console.log(this.players);
+    //Spieler zum Game hinzufügen mit all seinen Variablen
+    addPlayer(jwt, name, cards = [], balance= 100, active = true, bet = 0, score = 0 ) {
+        this.players.push({"jwt": jwt, "name": name, "cards": cards, "balance": balance, "active": active, "bet": bet, "score": score});
+        logger.info(("Game.js: Player added: " + name));
     }
 
     //Gibt ein Gemischeltes Deck zurück
@@ -61,6 +65,7 @@ class Game {
             const j = Math.floor(Math.random() * (i + 1));
             [deck[i], deck[j]] = [deck[j], deck[i]];
         }
+        logger.info("game.js: Shuffled Deck created");
         return deck;
     }
     
@@ -78,6 +83,7 @@ class Game {
                 player.cards.push(card);
             }
         }
+        logger.info("game.js: Cards dealt to all Players");
     }
 
     //Wird beim Rundenstart ausgeführt, um Variablen zurückzusetzen
@@ -85,6 +91,7 @@ class Game {
         this.currentPlayer = 0;
         this.currentRound = 0;
         this.deck = this.createShuffledDeck();
+        logger.info("game.js: Initialised Game variabels and setting player variabels");
         this.players.forEach((player)=>{
             player.active = true;
             player.balance -= this.bet;
@@ -103,24 +110,27 @@ class Game {
 
     //Verarbeitet Tausch Zug, speichert Daten in players.cards ab und gibt message für Spieler zurück
     drawCards(playerId, cardIds) {
-
+        //Auswahl des Spielers und Validierung des Zugs
         let index = this.players.findIndex(p => p.jwt === playerId);
         let player = this.players[index];
 
-
+        //Auswahl was geschieht wenn der Spieler dran oder aktiv ist
         if(!player.active ||    
             this.currentPlayer != index || 
             !Game.drawRounds.includes(this.currentRound))
         {
-            console.log("unzulässiger Tausch")
+            logger.info("unzulässiger Tauschzug")
             return;
         }
         
         cardIds.forEach((cardId) => {
             const cardIndex = parseInt(cardId.match(/^\d+_(\d+)$/)[1], 10);
+            //implementieren von verschieben der Karten in "used Deck"
             player.cards[cardIndex] = this.deck.pop();
         });
+        //Nächster Spieler
         this.updateCurrentPlayer();
+        logger.info("game.js: switched card of player: " + player.name);
         return JSON.stringify({type: "drawCards", cards: player.cards});
     }
 
@@ -129,6 +139,7 @@ class Game {
         let index = this.players.findIndex(p => p.jwt === playerId);
         let player = this.players[index];
 
+        //Spieler hat gefoldet und ist daher nicht mehr aktiv
         if(fold) {
             player.active = false;
             return;
@@ -143,12 +154,12 @@ class Game {
             !Game.betRounds.includes(this.currentRound) ||
             this.getCurrentBet()>bet)
         {
-            console.log("unzulässiger Einsatz")
+            logger.error("game.js: Unzulässiger einsatz")
             return;
         }
 
         player.bet = bet;
-        console.log(player.bet);
+        logger.info("game.js: Bet of player: " + player.name + " set to: " + player.bet);
         this.updateCurrentPlayer();
         return JSON.stringify({ // type ist ein empty String, da die untenstehenden Variablen jedesmal aktualisiert werden.
             "type": "",
@@ -178,6 +189,31 @@ class Game {
                 this.currentPlayer = 0;
             } 
         }
+        logger.info("game.js: Set next player as current player. Now in Gameround: " + this.currentRound);
+
+        if(this.currentRound === 3){
+            this.gameEnd()
+        }        //Implementieren der Methode für Spiel ende
+    }
+
+
+    gameEnd(){
+        let highScore = 0;
+        let highetsScoringPlayer = null;
+
+        this.players.forEach(player => {
+            logger.info("game.js: Player: "+ player.name + " Cards: " + player.cards);
+            player.score = this.evaluateHand(player.cards);
+            logger.info("game.js: player:" + player.name + "Score: " + player.score);
+
+            if(player.score > highScore){
+                highScore = player.score;
+                highetsScoringPlayer = player;
+            }
+        })
+
+        logger.info("game.js: Game Ended. Highscore: " + highScore + " by player: " + highetsScoringPlayer.name);
+        return highetsScoringPlayer.name
     }
 
     //Gibt die Summe aller Einsätze zurück (den Pot)
@@ -213,6 +249,7 @@ class Game {
                     cards: Array(player.cards.length).fill("rueckseite")
                 });
             }
+            logger.info("games.js: Startet Game. Set all Game Variables. Set corresponding cards for player");
         })
         return JSON.stringify(data);
     }
@@ -247,8 +284,8 @@ class Game {
             cardValues.push(this.valueRanking[value]);
             cardTypes.push(this.cardRanking[type]);
         }
-        logger.info("card Types split: " + cardTypes);
-        logger.info("Card Values split: " + cardValues);
+        logger.info("games.js: card Types split: " + cardTypes);
+        logger.info("games.js: Card Values split: " + cardValues);
         return {cardTypes, cardValues};
     }
 
@@ -285,7 +322,7 @@ class Game {
 
     //input hand: ["herz 10", "herz bube", "herz dame", "herz koenig", "herz ass"] and gives out Hand Score
     evaluateHand(hand) {
-        logger.info("Method evaluateHand called with hand: " + hand);
+        logger.info("games.js: Method evaluateHand called with hand: " + hand);
 
         const {cardTypes, cardValues} = this.extractCardInfo(hand);
 
@@ -294,22 +331,22 @@ class Game {
          * @returns {boolean}
          */
         const pairFunktion = () => this.countValuesSorted(cardValues).includes(2);
-        logger.info("PairFunkton result: " + pairFunktion());
+        logger.info("games.js: PairFunkton result: " + pairFunktion());
 
         const twoPair = () => this.countValuesSorted(cardValues)[0] === 2 && this.countValuesSorted(cardValues)[1] === 2;
-        logger.info("TwoPair result: " + twoPair());
+        logger.info("games.js: TwoPair result: " + twoPair());
 
         const threeOfAKind = () => this.countValuesSorted(cardValues)[0] === 3;
-        logger.info("ThreeOfAKind result: " + threeOfAKind());
+        logger.info("games.js: ThreeOfAKind result: " + threeOfAKind());
 
         const fourOfAKind = () => this.countValuesSorted(cardValues)[0] === 4;
-        logger.info("FourOfAKind result: " + fourOfAKind());
+        logger.info("games.js: FourOfAKind result: " + fourOfAKind());
 
         const flush = () => this.countTypeSorted(cardTypes)[0] === 5;
-        logger.info("Flush result: " + flush());
+        logger.info("games.js: Flush result: " + flush());
 
         const fullHouse = () => pairFunktion() && threeOfAKind();
-        logger.info("FullHouse result: " + fullHouse());
+        logger.info("games.js: FullHouse result: " + fullHouse());
 
         const straight = () => {
             const sortedCardValues = [...cardValues].sort((a, b) => b - a);
@@ -344,18 +381,17 @@ class Game {
                 }
             }
         }
-        logger.info("Straight result: " + straight());
+        logger.info("games.js: Straight result: " + straight());
 
         const highCard = () => this.countValuesSorted(cardValues)[0] === 1 && (!flush() && !straight());
-        logger.info("HighCard result: " + highCard());
+        logger.info("games.js: HighCard result: " + highCard());
 
         const straightFlush = () => straight() && flush();
-        logger.info("StraightFlush result: " + straightFlush());
+        logger.info("games.js: StraightFlush result: " + straightFlush());
 
         const royalFlush = () => {
             const sortedCardValues = [...cardValues].sort((a, b) => b - a);
             const royalRanks = [14, 13, 12, 11, 10];
-            logger.info("sortedCardValues" + sortedCardValues);
 
             for (let i = 0; i < sortedCardValues.length - 1; i++) {
                 if (sortedCardValues[i] !== royalRanks[i]) {
@@ -369,7 +405,7 @@ class Game {
                 return false;
             }
         }
-        logger.info("RoyalFlush result: " + royalFlush());
+        logger.info("games.js: RoyalFlush result: " + royalFlush());
 
         /**
          * Section calculates the hand rank through switch case.
@@ -441,7 +477,7 @@ class Game {
             }
 
         }
-        logger.info("Card Value as String after conkat: " + stringKonkatCardValue );
+        logger.info("game.js: Card Value as String after conkat: " + stringKonkatCardValue );
         const score = Number(stringKonkatCardValue)
         return score;
     }

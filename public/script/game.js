@@ -1,8 +1,9 @@
-    const drawCards = [];
+//const logger = require('C:/DHBW/Semester2/Web_Engineering/Web-Engineering/logger/logger.js');
+const drawCards = [];
   
     ws.addEventListener('message', (event) => {
       let data = JSON.parse(event.data);
-      
+
       
     if (data.currentPlayer !== undefined) {
         document.getElementById("currentPlayer").textContent = "aktueller Spieler: " + data.currentPlayer;

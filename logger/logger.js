@@ -1,16 +1,14 @@
 const { createLogger, format, transports } = require('winston');
 
 const logger = createLogger({
-    level: 'info',
+    level: 'silly', // loggt alles ab silly aufwärts
     format: format.combine(
         format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-        format.printf(({ level, message, timestamp }) => {
-            return `[${timestamp}] [${level.toUpperCase()}] ${message}`;
+        format.printf(({ timestamp, level, message }) => {
+            return `${timestamp} | ${level} | ${message}`;
         })
     ),
-    transports: [
-        new transports.Console()
-    ]
+    transports: [new transports.Console()]
 });
 
 module.exports = logger;
