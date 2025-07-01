@@ -12,18 +12,23 @@ class Game {
 
     //Die erste und die dritte Runde sind Setzrunden
     static betRounds = [0, 2];
-    
+
     //Die zweite Runde ist eine Tauschrunde
     static drawRounds = [1];
 
-    //DELETE, wenn nicht fertig: Statt betRounds & drawRounds
-    //Gibt den Spielablauf an:
-    //0 -> Setzrunde
-    //1 -> Tauschrunde
-    //2 -> Spielende
+    /**
+     * The sequence of rounds in the game.
+     * 0 = Betting round, 1 = Drawing round, 2 = End of game.
+     * @type {number[]}
+     * @static
+     */
     static rounds = [0, 1, 0, 2]
 
-    //anlegen eines sortierten Kartendecks
+    /**
+     * Creates a sorted deck of cards.
+     * @returns {string[]} An array of card names.
+     * @static
+     */
     static cardNames = (() => {
         const suits = ['herz', 'karo', 'pik', 'kreuz'];
         const values = [
@@ -40,7 +45,12 @@ class Game {
         return cards;
     })();
 
-    //Construction of Game
+    /**
+     * Creates a new game instance.
+     * @param {string} jwt - The JSON Web Token of the player creating the game.
+     * @param {string} name - The name of the player creating the game.
+     * @param {function} onGameEndCallback - A callback function to be executed when the game ends.
+     */
     constructor(jwt, name) {
         this.players = [];
         this.addPlayer(jwt, name);
@@ -51,13 +61,24 @@ class Game {
         logger.info("Game.js: Constructed Game");
     }
 
-    //Spieler zum Game hinzufügen mit all seinen Variablen
-    addPlayer(jwt, name, cards = [], balance= 100, active = true, bet = 0 ) {
+    /**
+     * Adds a player to the game.
+     * @param {string} jwt - The JSON Web Token of the player.
+     * @param {string} name - The name of the player.
+     * @param {string[]} [cards=[]] - The player's cards.
+     * @param {number} [balance=100] - The player's starting balance.
+     * @param {boolean} [active=true] - Whether the player is active in the game.
+     * @param {number} [bet=0] - The player's current bet.
+     */
+    addPlayer(jwt, name, cards = [], balance = 100, active = true, bet = 0) {
         this.players.push({"jwt": jwt, "name": name, "cards": cards, "balance": balance, "active": active, "bet": bet});
         logger.info(("Game.js: Player added: " + name));
     }
 
-    //Gibt ein Gemischeltes Deck zurück
+    /**
+     * Creates and returns a shuffled deck of cards.
+     * @returns {string[]} A shuffled deck of cards.
+     */
     createShuffledDeck() {
         const deck = [...Game.cardNames];
         for (let i = deck.length - 1; i > 0; i--) {
@@ -67,13 +88,20 @@ class Game {
         logger.info("game.js: Shuffled Deck created");
         return deck;
     }
-    
-    //Wandelt die Rundennummer in einen String um
-    getRoundName(index){
+
+    /**
+     * Converts a round number to its string representation.
+     * @param {number} index - The index of the round.
+     * @returns {string} The name of the round.
+     */
+    getRoundName(index) {
         return ['1. Setzrunde', 'Tauschrunde', '2. Setzrunde'][index];
     }
 
-    //Teilt jedem Spieler (standardmäßig) 5 Karten aus
+    /**
+     * Deals cards to each player.
+     * @param {number} [cardsPerPlayer=5] - The number of cards to deal to each player.
+     */
     dealCards(cardsPerPlayer = 5) {
         for (const player of this.players) {
             player.cards = player.cards || [];
@@ -85,21 +113,28 @@ class Game {
         logger.info("game.js: Cards dealt to all Players");
     }
 
-    //Wird beim Rundenstart ausgeführt, um Variablen zurückzusetzen
+    /**
+     * Starts the game, initializes variables, and deals cards.
+     */
     start() {
         this.currentPlayer = 0;
         this.currentRound = 0;
         this.deck = this.createShuffledDeck();
         logger.info("game.js: Initialised Game variabels and setting player variabels");
-        this.players.forEach((player)=>{
+        this.players.forEach((player) => {
             player.active = true;
             player.balance -= this.bet;
             player.bet = 5;
+            player.cards = [];
         });
         this.dealCards();
     }
 
-    //Gibt ein Array aller Spielernamen zurück
+    /**
+     * Gets the names of all players in the game.
+     * @param {Map<string, {name: string}>} users - A map of users.
+     * @returns {string[]} An array of player names.
+     */
     getPlayerNames(users) {
         return this.players
             .map(player => users.get(player.jwt))
@@ -107,21 +142,25 @@ class Game {
             .map(user => user.name);
     }
 
-    //Verarbeitet Tausch Zug, speichert Daten in players.cards ab und gibt message für Spieler zurück
+    /**
+     * Processes a player's card draw.
+     * @param {string} playerId - The ID of the player.
+     * @param {string[]} cardIds - The IDs of the cards to be drawn.
+     * @returns {string|undefined} A JSON string with the player's new cards, or undefined if the move is invalid.
+     */
     drawCards(playerId, cardIds) {
         //Auswahl des Spielers und Validierung des Zugs
         let index = this.players.findIndex(p => p.jwt === playerId);
         let player = this.players[index];
 
         //Auswahl was geschieht wenn der Spieler dran oder aktiv ist
-        if(!player.active ||    
-            this.currentPlayer != index || 
-            !Game.drawRounds.includes(this.currentRound))
-        {
+        if (!player.active ||
+            this.currentPlayer != index ||
+            !Game.drawRounds.includes(this.currentRound)) {
             logger.info("unzulässiger Tauschzug")
             return;
         }
-        
+
         cardIds.forEach((cardId) => {
             const cardIndex = parseInt(cardId.match(/^\d+_(\d+)$/)[1], 10);
             //implementieren von verschieben der Karten in "used Deck"
@@ -133,71 +172,100 @@ class Game {
         return JSON.stringify({type: "drawCards", cards: player.cards});
     }
 
-    // Validiert Setz Zug, speichert Daten in players.bet / players.active ab und gibt message für Spieler zurück.
-    bet(playerId, bet, fold = false){
+    /**
+     * Processes a player's bet.
+     * @param {string} playerId - The ID of the player.
+     * @param {number} bet - The amount the player is betting.
+     * @param {boolean} [fold=false] - Whether the player is folding.
+     * @returns {string|undefined} A JSON string with the updated game state, or undefined if the move is invalid.
+     */
+    bet(playerId, bet, fold = false) {
         let index = this.players.findIndex(p => p.jwt === playerId);
         let player = this.players[index];
 
         //Spieler hat gefoldet und ist daher nicht mehr aktiv
-        if(fold) {
+        if (fold) {
             player.active = false;
             return;
         }
 
         //Validiere Input
         //EDIT: falls Spieler weniger balance hat, als nötig, ist ihm erlaubt alles zu setzen
-        if(!player.active ||    
-            bet-player.bet < 10 || 
-            this.currentPlayer != index || 
+        if (!player.active ||
+            bet - player.bet < 10 ||
+            this.currentPlayer != index ||
             bet > player.balance ||
             !Game.betRounds.includes(this.currentRound) ||
-            this.getCurrentBet()>bet)
-        {
+            this.getCurrentBet() > bet) {
             logger.error("game.js: Unzulässiger einsatz")
             return;
         }
 
         player.bet = bet;
         logger.info("game.js: Bet of player: " + player.name + " set to: " + player.bet);
-        this.updateCurrentPlayer();
-        return JSON.stringify({ // type ist ein empty String, da die untenstehenden Variablen jedesmal aktualisiert werden.
-            "type": "",
-            "currentPlayer": this.getCurrentPlayer(),
-            "currentBet": this.getCurrentBet(),
-            "currentPot": this.getCurrentPot(),
-            "currentRound": this.getRoundName(this.currentRound)
-        });
+        const updateResult = this.updateCurrentPlayer();
+
+        // Prüfen, was von updateCurrentPlayer zurückkam
+        if (updateResult) {
+            // Fall 1: Das Spiel ist komplett zu Ende
+            if (updateResult === "gameEnd") { // gameEnd() gibt einen String zurück
+                return JSON.stringify({
+                    "type": "gameEnd",
+                    "currentPlayer": this.getCurrentPlayer(),
+                    "currentBet": this.getCurrentBet(),
+                    "currentPot": this.getCurrentPot(),
+                    "currentRound": this.getRoundName(this.currentRound)
+                });
+            }else{
+                return JSON.stringify({ // type ist ein empty String, da die untenstehenden Variablen jedesmal aktualisiert werden.
+                    "type": "",
+                    "currentPlayer": this.getCurrentPlayer(),
+                    "currentBet": this.getCurrentBet(),
+                    "currentPot": this.getCurrentPot(),
+                    "currentRound": this.getRoundName(this.currentRound)
+                });
+            }
+        }
+
+        // Fall 3: Standardfall (Runde läuft weiter). Returnen von GameDisplay update.
+
     }
 
-    //EDIT: Spielende muss noch hinzugefügt werden.
-    //Berechnet den Index des nächsten Spieler
-    updateCurrentPlayer(){ 
-        this.currentPlayer = (this.currentPlayer+1) % this.players.length;
+    /**
+     * Updates the current player to the next active player and advances the round if necessary.
+     * @returns {string|undefined} A JSON string with the game end state, or undefined if the game continues.
+     */
+    updateCurrentPlayer() {
+        this.currentPlayer = (this.currentPlayer + 1) % this.players.length;
 
-        if(this.currentPlayer == 0){
+        if (this.currentPlayer == 0) {
             this.betNoRepeat = false;
         }
 
 
         //beendet die Tausch/Setzrunde erst, wenn Alle Einsätze gleich sind.
-        if(this.players.every(p => p.bet === this.players[0].bet && (!this.betNoRepeat || this.currentPlayer == 0))) {
-            this.currentRound = this.currentRound+1;
-            if(!this.betNoRepeat)
-            {
+        if (this.players.every(p => p.bet === this.players[0].bet && (!this.betNoRepeat || this.currentPlayer == 0))) {
+            this.currentRound = this.currentRound + 1;
+            if (!this.betNoRepeat) {
                 this.betNoRepeat = true;
                 this.currentPlayer = 0;
-            } 
+            }
         }
         logger.info("game.js: Set next player as current player. Now in Gameround: " + this.currentRound);
 
-        if(this.currentRound === 3){
-            this.gameEnd()
-
-            //neue Runde Starten
+        //Return message from gameEnd
+        if (this.currentRound === 3) {
+            return "gameEnd"; // Return message from gameEnd
         }
+        return null;
     }
 
-    gameEnd(){
+
+    /**
+     * Calculates the winner of the game, distributes the pot, and starts a new game.
+     * @returns {string} A JSON string with the winner's name and the final pot.
+     */
+    gameEnd() {
         let highScore = 0;
         let highScoringPlayers = [];
         let winner = null;
@@ -205,10 +273,10 @@ class Game {
         this.players.forEach(player => {
             const score = this.evaluateHand(player.cards);
 
-            if(score > highScore){
+            if (score > highScore) {
                 highScore = score;
                 highScoringPlayers = [player];  // Neuer Highscore → Liste neu starten
-            } else if(score === highScore){
+            } else if (score === highScore) {
                 highScoringPlayers.push(player);  // Gleichstand → Spieler zur Liste hinzufügen
             }
         });
@@ -216,7 +284,7 @@ class Game {
         // Wenn nur ein Spieler den höchsten Score hat
         if (highScoringPlayers.length === 1) {
             winner = highScoringPlayers[0];
-        }else {
+        } else {
             // Tie-Breaker notwendig
             winner = highScoringPlayers[0];
             let bestTieBreakerScore = this.getTieBreakerScore(winner.cards);
@@ -232,287 +300,324 @@ class Game {
             }
         }
         logger.info("game.js: Winner: " + winner.name);
+        const pot = this.getCurrentPot();
         this.setWinningPotToWinner(winner);
+
         setTimeout(() => {
             logger.info("game.js: Starting new Game");
-            this.start()
+            this.start();
         }, 3000);
     }
 
-    setWinningPotToWinner(winner){
-        const pot = this.getCurrentPot()
-        winner.balance += pot
-        logger.info("game.js: Paying Winner the pot: " + pot)
-        logger.info("game.js: Winner balance: " + winner.balance)
-    }
-
-
-    //Gibt die Summe aller Einsätze zurück (den Pot)
-    getCurrentPot(){
-        return this.players.reduce((sum, player) => sum + parseInt(player.bet, 10), 0);
-    }
-    //Gibt den höchsten aller Einsätze zurück
-    getCurrentBet(){
-        return Math.max(...this.players.map(player => player.bet));
-    }
-    //Gibt den Namen des aktuellen Spielers zurück
-    getCurrentPlayer(){
-        return this.players[this.currentPlayer].name;
-    }
-
-    //Gibt dem Spieler die variablen Daten zurück die zum rendern der game.html nötig sind 
-    getGameState(jwt, users) {
-        const data = {"type": 'getGameState', players: [], 
-            "currentPlayer": this.getCurrentPlayer(),
-            "currentBet": this.getCurrentBet(),
-            "currentPot": this.getCurrentPot(),
-            "currentRound": this.getRoundName(this.currentRound)};
-        this.players.forEach((player, index) => {
-            if (jwt === player.jwt) {
-                data.self = index;
-                data.players.push({
-                    user: users.get(player.jwt).name,
-                    cards: player.cards
-                });
-            } else {
-                data.players.push({
-                    user: users.get(player.jwt).name,
-                    cards: Array(player.cards.length).fill("rueckseite")
-                });
-            }
-            logger.info("game.js: Startet Game. Set all Game Variables. Set corresponding cards for player");
-        })
-        return JSON.stringify(data);
-    }
-
-    cardRanking = {'pik': 4, 'herz': 3, 'karo': 2, 'kreuz': 1};
-    valueRanking = {
-        '2': 2,
-        '3': 3,
-        '4': 4,
-        '5': 5,
-        '6': 6,
-        '7': 7,
-        '8': 8,
-        '9': 9,
-        '10': 10,
-        'bube': 11,
-        'dame': 12,
-        'koenig': 13,
-        'ass': 14
-    };
-
-    /**
-     * Splits the cards in hand into cardTypes and cardValues Arrays.
-     * @param hand
-     * @returns {{cardTypes: *[], cardValues: *[]}}
-     */
-    extractCardInfo(hand) {
-        const cardTypes = [];
-        const cardValues = [];
-        for (const card of hand) {
-            const [type, value] = card.split(' ');
-            cardValues.push(this.valueRanking[value]);
-            cardTypes.push(this.cardRanking[type]);
-        }
-        logger.info("game.js: card Types split: " + cardTypes);
-        logger.info("game.js: Card Values split: " + cardValues);
-        return {cardTypes, cardValues};
-    }
-
-    /**
-     * Counts how many times each card value appears in cardValues,
-     * @param cardValues
-     * @returns Array of card values sorted by highest value first.
-     */
-    countValuesSorted(cardValues) {
-        const countMap = {};
-
-        for (const value of cardValues) {
-            countMap[value] = (countMap[value] || 0) + 1;
+        /**
+         * Adds the pot to the winner's balance.
+         * @param {object} winner - The winning player object.
+         */
+        setWinningPotToWinner(winner)
+        {
+            const pot = this.getCurrentPot()
+            winner.balance += pot
+            logger.info("game.js: Payer" + winner.name + " won: " + pot)
         }
 
-        //sorting found values as key value pairs
-        return Object.values(countMap).sort((a, b) => b - a);
-    }
-
-    /**
-     * Counts how many times each card type appears in cardTypes,
-     * @param cardTypes
-     * @returns Array of card types sorted by highest type first.
-     */
-    countTypeSorted(cardTypes) {
-        const countMap = {};
-
-        for (const type of cardTypes) {
-            countMap[type] = (countMap[type] || 0) + 1;
-        }
-
-        return Object.values(countMap).sort((a, b) => b - a);
-    }
-
-    //input hand: ["herz 10", "herz bube", "herz dame", "herz koenig", "herz ass"] and gives out Hand Score
-    evaluateHand(hand) {
-        logger.info("game.js: Method evaluateHand called with hand: " + hand);
-
-        const {cardTypes, cardValues} = this.extractCardInfo(hand);
 
         /**
-         * Section checks the hand combinations
-         * @returns {boolean}
+         * Gets the current total pot.
+         * @returns {number} The current pot.
          */
-        const pairFunktion = () => this.countValuesSorted(cardValues).includes(2);
-        logger.info("game.js: PairFunkton result: " + pairFunktion());
+        getCurrentPot()
+        {
+            return this.players.reduce((sum, player) => sum + parseInt(player.bet, 10), 0);
+        }
+        /**
+         * Gets the current highest bet.
+         * @returns {number} The current highest bet.
+         */
+        getCurrentBet()
+        {
+            return Math.max(...this.players.map(player => player.bet));
+        }
+        /**
+         * Gets the name of the current player.
+         * @returns {string} The name of the current player.
+         */
+        getCurrentPlayer()
+        {
+            return this.players[this.currentPlayer].name;
+        }
 
-        const twoPair = () => this.countValuesSorted(cardValues)[0] === 2 && this.countValuesSorted(cardValues)[1] === 2;
-        logger.info("game.js: TwoPair result: " + twoPair());
-
-        const threeOfAKind = () => this.countValuesSorted(cardValues)[0] === 3;
-        logger.info("game.js: ThreeOfAKind result: " + threeOfAKind());
-
-        const fourOfAKind = () => this.countValuesSorted(cardValues)[0] === 4;
-        logger.info("game.js: FourOfAKind result: " + fourOfAKind());
-
-        const flush = () => this.countTypeSorted(cardTypes)[0] === 5;
-        logger.info("game.js: Flush result: " + flush());
-
-        const fullHouse = () => pairFunktion() && threeOfAKind();
-        logger.info("game.js: FullHouse result: " + fullHouse());
-
-        const straight = () => {
-            const sortedCardValues = [...cardValues].sort((a, b) => b - a);
-            let testedForStraight = testStraight(sortedCardValues, sortedCardValues.length);
-
-            //check for special case wheel: A,2,3,4,5, if Ass is in hand
-            if (sortedCardValues.includes(14) && testedForStraight === false) {
-                //new car set: Ass is mapped in new Array as one
-                const sortedCardValuesSpecial = sortedCardValues.map(card => card === 14 ? 1 : card);
-                //sorting new Array as normal
-                sortedCardValuesSpecial.sort((a, b) => b - a);
-                testedForStraight = testStraight(sortedCardValuesSpecial, sortedCardValuesSpecial.length);
-            }
-
-            if (testedForStraight) {
-                return true
-            } else {
-                return false
-            }
-
-            function testStraight(cardArray, arrayLength) {
-                let testSum = 1
-                for (let i = 0; i < arrayLength - 1; i++) {
-                    if (cardArray[i] - 1 === cardArray[i + 1]) {
-                        testSum++;
-                    }
+        /**
+         * Gets the current game state for a specific player.
+         * @param {string} jwt - The JSON Web Token of the player requesting the game state.
+         * @param {Map<string, {name: string}>} users - A map of users.
+         * @returns {string} A JSON string with the current game state.
+         */
+        getGameState(jwt, users)
+        {
+            const data = {
+                "type": 'getGameState', players: [],
+                "currentPlayer": this.getCurrentPlayer(),
+                "currentBet": this.getCurrentBet(),
+                "currentPot": this.getCurrentPot(),
+                "currentRound": this.getRoundName(this.currentRound)
+            };
+            this.players.forEach((player, index) => {
+                if (jwt === player.jwt) {
+                    data.self = index;
+                    data.players.push({
+                        user: users.get(player.jwt).name,
+                        cards: player.cards
+                    });
+                } else {
+                    data.players.push({
+                        user: users.get(player.jwt).name,
+                        cards: Array(player.cards.length).fill("rueckseite")
+                    });
                 }
-                if (testSum === 5) {
+                logger.info("game.js: Startet Game. Set all Game Variables. Set corresponding cards for player");
+            })
+            return JSON.stringify(data);
+        }
+
+        /**
+         * A map of card suit rankings.
+         * @type {Object.<string, number>}
+         */
+        cardRanking = {'pik': 4, 'herz': 3, 'karo': 2, 'kreuz': 1};
+        /**
+         * A map of card value rankings.
+         * @type {Object.<string, number>}
+         */
+        valueRanking = {
+            '2': 2,
+            '3': 3,
+            '4': 4,
+            '5': 5,
+            '6': 6,
+            '7': 7,
+            '8': 8,
+            '9': 9,
+            '10': 10,
+            'bube': 11,
+            'dame': 12,
+            'koenig': 13,
+            'ass': 14
+        };
+
+        /**
+         * Extracts the types and values of cards in a hand.
+         * @param {string[]} hand - An array of card names.
+         * @returns {{cardTypes: number[], cardValues: number[]}} An object containing arrays of card types and values.
+         */
+        extractCardInfo(hand)
+        {
+            const cardTypes = [];
+            const cardValues = [];
+            for (const card of hand) {
+                const [type, value] = card.split(' ');
+                cardValues.push(this.valueRanking[value]);
+                cardTypes.push(this.cardRanking[type]);
+            }
+            logger.info("game.js: card Types split: " + cardTypes);
+            logger.info("game.js: Card Values split: " + cardValues);
+            return {cardTypes, cardValues};
+        }
+
+        /**
+         * Counts the occurrences of each card value and sorts them in descending order.
+         * @param {number[]} cardValues - An array of card values.
+         * @returns {number[]} An array of card value counts, sorted in descending order.
+         */
+        countValuesSorted(cardValues)
+        {
+            const countMap = {};
+
+            for (const value of cardValues) {
+                countMap[value] = (countMap[value] || 0) + 1;
+            }
+
+            //sorting found values as key value pairs
+            return Object.values(countMap).sort((a, b) => b - a);
+        }
+
+        /**
+         * Counts the occurrences of each card type and sorts them in descending order.
+         * @param {number[]} cardTypes - An array of card types.
+         * @returns {number[]} An array of card type counts, sorted in descending order.
+         */
+        countTypeSorted(cardTypes)
+        {
+            const countMap = {};
+
+            for (const type of cardTypes) {
+                countMap[type] = (countMap[type] || 0) + 1;
+            }
+
+            return Object.values(countMap).sort((a, b) => b - a);
+        }
+
+        /**
+         * Evaluates a player's hand and returns its rank.
+         * @param {string[]} hand - An array of card names.
+         * @returns {number} The rank of the hand.
+         */
+        evaluateHand(hand)
+        {
+            logger.info("game.js: Method evaluateHand called with hand: " + hand);
+
+            const {cardTypes, cardValues} = this.extractCardInfo(hand);
+
+            const pairFunktion = () => this.countValuesSorted(cardValues).includes(2);
+            logger.info("game.js: PairFunkton result: " + pairFunktion());
+
+            const twoPair = () => this.countValuesSorted(cardValues)[0] === 2 && this.countValuesSorted(cardValues)[1] === 2;
+            logger.info("game.js: TwoPair result: " + twoPair());
+
+            const threeOfAKind = () => this.countValuesSorted(cardValues)[0] === 3;
+            logger.info("game.js: ThreeOfAKind result: " + threeOfAKind());
+
+            const fourOfAKind = () => this.countValuesSorted(cardValues)[0] === 4;
+            logger.info("game.js: FourOfAKind result: " + fourOfAKind());
+
+            const flush = () => this.countTypeSorted(cardTypes)[0] === 5;
+            logger.info("game.js: Flush result: " + flush());
+
+            const fullHouse = () => pairFunktion() && threeOfAKind();
+            logger.info("game.js: FullHouse result: " + fullHouse());
+
+            const straight = () => {
+                const sortedCardValues = [...cardValues].sort((a, b) => b - a);
+                let testedForStraight = testStraight(sortedCardValues, sortedCardValues.length);
+
+                //check for special case wheel: A,2,3,4,5, if Ass is in hand
+                if (sortedCardValues.includes(14) && testedForStraight === false) {
+                    //new car set: Ass is mapped in new Array as one
+                    const sortedCardValuesSpecial = sortedCardValues.map(card => card === 14 ? 1 : card);
+                    //sorting new Array as normal
+                    sortedCardValuesSpecial.sort((a, b) => b - a);
+                    testedForStraight = testStraight(sortedCardValuesSpecial, sortedCardValuesSpecial.length);
+                }
+
+                if (testedForStraight) {
                     return true
                 } else {
                     return false
                 }
+
+                function testStraight(cardArray, arrayLength) {
+                    let testSum = 1
+                    for (let i = 0; i < arrayLength - 1; i++) {
+                        if (cardArray[i] - 1 === cardArray[i + 1]) {
+                            testSum++;
+                        }
+                    }
+                    if (testSum === 5) {
+                        return true
+                    } else {
+                        return false
+                    }
+                }
             }
-        }
-        logger.info("game.js: Straight result: " + straight());
+            logger.info("game.js: Straight result: " + straight());
 
-        const highCard = () => this.countValuesSorted(cardValues)[0] === 1 && (!flush() && !straight());
-        logger.info("game.js: HighCard result: " + highCard());
+            const highCard = () => this.countValuesSorted(cardValues)[0] === 1 && (!flush() && !straight());
+            logger.info("game.js: HighCard result: " + highCard());
 
-        const straightFlush = () => straight() && flush();
-        logger.info("game.js: StraightFlush result: " + straightFlush());
+            const straightFlush = () => straight() && flush();
+            logger.info("game.js: StraightFlush result: " + straightFlush());
 
-        const royalFlush = () => {
-            const sortedCardValues = [...cardValues].sort((a, b) => b - a);
-            const royalRanks = [14, 13, 12, 11, 10];
+            const royalFlush = () => {
+                const sortedCardValues = [...cardValues].sort((a, b) => b - a);
+                const royalRanks = [14, 13, 12, 11, 10];
 
-            for (let i = 0; i < sortedCardValues.length - 1; i++) {
-                if (sortedCardValues[i] !== royalRanks[i]) {
+                for (let i = 0; i < sortedCardValues.length - 1; i++) {
+                    if (sortedCardValues[i] !== royalRanks[i]) {
+                        return false;
+                    }
+                }
+                //Connecting the dotes. Final Test for Royal Flush
+                if (flush()) {
+                    return true;
+                } else {
                     return false;
                 }
             }
-            //Connecting the dotes. Final Test for Royal Flush
-            if (flush()) {
-                return true;
-            } else {
-                return false;
+            logger.info("game.js: RoyalFlush result: " + royalFlush());
+
+            function getHandRank() {
+                let handRank;
+                switch (true) {
+                    //order of cases is important, switching Pair before Full House leads to wrong result
+                    case royalFlush():
+                        handRank = 90000;
+                        break;
+                    case straightFlush():
+                        handRank = 80000;
+                        break;
+                    case fourOfAKind():
+                        handRank = 70000;
+                        break;
+                    case fullHouse():
+                        handRank = 60000;
+                        break;
+                    case flush():
+                        handRank = 50000;
+                        break;
+                    case straight():
+                        handRank = 40000;
+                        break;
+                    case threeOfAKind():
+                        handRank = 30000;
+                        break;
+                    case twoPair():
+                        handRank = 20000;
+                        break;
+                    case pairFunktion():
+                        handRank = 10000;
+                        break;
+                    case highCard():
+                        handRank = 0;
+                        break;
+                    default:
+                        handRank = null;
+                        break;
+                }
+                return handRank;
+
             }
+
+            return getHandRank();
         }
-        logger.info("game.js: RoyalFlush result: " + royalFlush());
+
 
         /**
-         * Section calculates the hand rank through switch case.
-         * @returns {number}
+         * Calculates a tie-breaker score for a hand.
+         * @param {string[]} hand - An array of card names.
+         * @returns {number} The tie-breaker score.
          */
-        function getHandRank() {
-            let handRank;
-            switch (true) {
-                //order of cases is important, switching Pair before Full House leads to wrong result
-                case royalFlush():
-                    handRank = 90000;
-                    break;
-                case straightFlush():
-                    handRank = 80000;
-                    break;
-                case fourOfAKind():
-                    handRank = 70000;
-                    break;
-                case fullHouse():
-                    handRank = 60000;
-                    break;
-                case flush():
-                    handRank = 50000;
-                    break;
-                case straight():
-                    handRank = 40000;
-                    break;
-                case threeOfAKind():
-                    handRank = 30000;
-                    break;
-                case twoPair():
-                    handRank = 20000;
-                    break;
-                case pairFunktion():
-                    handRank = 10000;
-                    break;
-                case highCard():
-                    handRank = 0;
-                    break;
-                default:
-                    handRank = null;
-                    break;
-            }
-            return handRank;
+        getTieBreakerScore(hand)
+        {
+            const cardValue = this.extractCardInfo(hand).cardValues;
 
+            cardValue.sort((a, b) => b - a);
+
+            //Creating unique number of card hand to compare with
+            let stringKonkatCardValue = "";
+            for (let i = 0; i < cardValue.length; i++) {
+                if (cardValue[i] < 10) {
+                    stringKonkatCardValue += "0" + cardValue[i].toString();
+                } else {
+                    stringKonkatCardValue += cardValue[i].toString();
+                }
+
+            }
+            logger.info("game.js: Card Value as String after conkat: " + stringKonkatCardValue);
+            const score = Number(stringKonkatCardValue)
+            return score;
         }
-        return getHandRank();
+
     }
 
-
-    /**
-     * Method to calculate the tie breaker score.
-     * The score is the sorted hand "hast" as compairabel number
-     * @param hand
-     * @returns {number}
-     */
-    getTieBreakerScore(hand) {
-        const cardValue = this.extractCardInfo(hand).cardValues;
-
-        cardValue.sort((a, b) => b - a);
-
-        //Creating unique number of card hand to compare with
-        let stringKonkatCardValue = "";
-        for (let i = 0; i < cardValue.length; i++) {
-            if (cardValue[i] < 10){
-                stringKonkatCardValue += "0"+cardValue[i].toString();
-            }else{
-                stringKonkatCardValue += cardValue[i].toString();
-            }
-
-        }
-        logger.info("game.js: Card Value as String after conkat: " + stringKonkatCardValue );
-        const score = Number(stringKonkatCardValue)
-        return score;
-    }
-
-}
-
-module.exports = Game;
+    module
+.
+    exports = Game;
