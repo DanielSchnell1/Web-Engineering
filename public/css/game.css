@@ -2,6 +2,12 @@
           font-family: initial;
         }
         
+        #foldButton {
+          background-color: #aa2a2a;
+        }
+        #foldButton:hover{
+          background-color: #871f1f;
+        }
         
         img:hover {
             transform: scale(1.05);

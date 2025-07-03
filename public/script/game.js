@@ -1,6 +1,8 @@
 //const logger = require('C:/DHBW/Semester2/Web_Engineering/Web-Engineering/logger/logger.js');
 const drawCards = [];
-  
+const endGame = document.getElementById('leaderboard');
+
+
     ws.addEventListener('message', (event) => {
       let data = JSON.parse(event.data);
 
@@ -81,7 +83,21 @@ const drawCards = [];
               cardsDiv.appendChild(img);
             });
           });
-        
+        container = document.getElementById(`players`);
+            const items = container.querySelectorAll(":scope > div");
+            const b = 100;
+            items.forEach((el, i) => {
+              console.log(b);
+              let angle = Math.PI * (i / (items.length - 1));
+              let y = b - b * Math.sin(angle);
+              el.style.top = y + "%";
+              
+            });
+      }
+
+      if(data.type === 'endGame') {
+        endGame.showModal();
+
       }
     });
 
@@ -104,6 +120,7 @@ const drawCards = [];
     const betSlider = document.getElementById('bet');
     const betValue = document.getElementById('betValue');
     const betButton = document.getElementById('betButton');
+    const foldButton = document.getElementById('foldButton');
 
     betSlider.addEventListener('input', () => {
       betValue.textContent = betSlider.value;

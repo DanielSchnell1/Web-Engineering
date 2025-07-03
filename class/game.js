@@ -10,6 +10,8 @@ const {log} = require("winston");
 
 class Game {
 
+    static users = new Map();
+
     //Die erste und die dritte Runde sind Setzrunden
     static betRounds = [0, 2];
 
@@ -95,7 +97,18 @@ class Game {
      * @returns {string} The name of the round.
      */
     getRoundName(index) {
-        return ['1. Setzrunde', 'Tauschrunde', '2. Setzrunde'][index];
+        return ['1. Setzrunde', 'Tauschrunde', '2. Setzrunde', 'Showdown'][index];
+    }
+
+
+    /**
+     * Sends a JSON message to all players in a specific lobby.
+     * @param {string} JSON - The JSON string message to send to each player.
+     */
+    sendMessageToLobby(JSON) {
+        this.players.forEach(user => {
+            Game.users.get(user.jwt).ws.send(JSON);
+        });
     }
 
     /**
