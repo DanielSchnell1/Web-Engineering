@@ -190,3 +190,8 @@ dialog {
     font-size: 1em;
   }
 }
+
+#userList li {
+  color: #28a745; /* Grün */
+  font-weight: bold;
+}

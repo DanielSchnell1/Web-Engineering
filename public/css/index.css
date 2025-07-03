@@ -1,35 +1,140 @@
-* {
-   font-family: initial;
-}
-    
-#lobbyDiv * {
-    padding: 5% auto 5% auto;
-    font-family: 'League Spartan', sans-serif;
+/* Global Fonts */
+body, input, button, h1, h2, h3, p {
+  font-family: initial;
 }
 
-#lobbyDiv *:hover{
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
+
+body {
+  margin: 0;
+  padding: 0;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  background-color: #1a1a1a;
+  position: relative;
+}
+
+/* Header Design */
+body::before {
+  content: '';
+  background-image: url('/img/design/header.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: top center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  pointer-events: none;
+  opacity: 1.0;
+}
+
+/* Title */
+h1 {
+  font-size: 3em;
+  margin-top: 0px;
+  margin-bottom: 30px;
+  color: #2aaa43;
+  animation: floatTitle 3s ease-in-out infinite;
+}
+
+/* Box Styling */
+#lobbyDiv {
+  background-color: #2c2c2c;
+  border: 2px solid #444;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Input Field */
+#lobbyDiv input[type="text"] {
+  font-size: 1.2em;
+  text-align: center;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background-color: #1a1a1a;
+  color: #2aaa43;
+  width: 100%;
+}
+
+/* Button Styling */
+#lobbyDiv button {
+  padding: 14px 16px; /* vorher 12px oder weniger */
+  background-color: #2aaa43;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
+  margin-top: 10px; 
+  height: 40px;
+}
+
+
+#lobbyDiv button:hover {
+  background-color: #4a8c3f;
+}
+
+/* Optional Shadow on Hover for All Inner Elements */
+#lobbyDiv *:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Mobile Portrait (unter 600px) */
 @media (max-width: 600px) {
-  #lobbyDiv {
-    width: 90vw;
-    padding: 30px 15px;
+  body {
+    padding: 20px;
   }
+
+  h1 {
+    font-size: 2em;
+  }
+
+  #lobbyDiv {
+  background-color: #2c2c2c;
+  border: 2px solid #444;
+  border-radius: 15px;
+  padding: 30px 25px 35px 25px;  /* unten mehr padding */
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  box-sizing: border-box; /* wichtig */
+}
+
 
   #lobbyDiv input[type="text"],
   #lobbyDiv button {
-    font-size: 1.2em;
-    padding: 14px 20px;
+    width: 100%;
+    font-size: 1em;
+  }
+}
+
+/* Tablets (600px–900px) */
+@media (max-width: 900px) {
+  #lobbyDiv {
+    width: 80%;
   }
 
   h1 {
     font-size: 2.5em;
-  }
-
-  body {
-    justify-content: center;
-    align-items: center;
-    padding: 0;
   }
 }
