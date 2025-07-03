@@ -62,6 +62,12 @@ img {
   margin-bottom: 5px;
 }
 
+.playerdata {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
 .controls {
   text-align: center;
   margin-top: 30px;

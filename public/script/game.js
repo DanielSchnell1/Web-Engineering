@@ -54,8 +54,11 @@ const endGame = document.getElementById('leaderboard');
           data.players.forEach((player, index) => {
             if(data.self != index) {
               container.innerHTML += `
-              <div class="player" style="top: ${600-200*Math.sqrt(10-20*(index/(data.players.length-1)-0.5)**2)}%;">
+              <div class="player" style="top: ${600 - 200 * Math.sqrt(10 - 20 * (index / (data.players.length - 1) - 0.5) ** 2)}%;">
+                <div class="playerdata">
                 <div class="playername">${player.user}</div>
+                <div class ="playername">${player.balance} </div>
+                </div>
                 <div class="cards" id="cards${index}"></div>
               </div>
               `;
@@ -63,8 +66,11 @@ const endGame = document.getElementById('leaderboard');
               let container = document.getElementById(`self`);
               container.innerHTML += `
               <div class="player">
+                <div class="playerdata">
                 <div class="playername">${player.user}</div>
-                <div class="cards" id="cards${index}"></div> 
+                <div class = "playername">${player.balance} </div>
+                </div>
+                <div class="cards" id="cards${index}"></div>
               </div>
               `;
             }
