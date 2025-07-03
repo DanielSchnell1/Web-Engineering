@@ -42,7 +42,6 @@ const wss = new WebSocket.Server({server});
 
 wss.on('connection', (ws) => {
 
-    let userToken = null;
     ws.on('message', (message) => {
         try {
             let data;
@@ -158,13 +157,24 @@ wss.on('connection', (ws) => {
 
 
     ws.on('close', () => { // Wird die Verbindung getrennt, so hat der Nutzer 10 Sekunden Zeit um sich neu zu verbinden, sonst wird er gelöscht
-        if (userToken && Game.users.has(userToken)) {
+        let userToken;
+
+        for (const [token, user] of Game.users.entries()) {
+            if (user.ws === ws) {
+                userToken = token;
+                break;
+            }
+        }
+
+        if (userToken) {
             setTimeout(() => {
-                if (Game.users.get(userToken)?.ws.readyState !== WebSocket.OPEN) {
+                const user = Game.users.get(userToken);
+                if (!user || user.ws.readyState !== WebSocket.OPEN) {
                     Game.users.delete(userToken);
+                    deleteUserFromGame(userToken);
                     console.log("User durch Close gelöscht:", userToken);
                 }
-            }, 10000);
+            }, 3000);
         }
     });
 
@@ -184,6 +194,29 @@ function logUsers() {
         console.log(`  WebSocket offen: ${userData.ws.readyState === 1}`); // 1 = OPEN
     }
     console.log('----------------------------');
+}
+
+/**
+ * Deletes the user from every game in games.
+ */
+function deleteUserFromGame(userId) {
+    games.forEach((game) => {
+        for (let i = 0; i < game.players.length; i++) {
+            const player = game.players[i];
+
+            if (player.jwt === userId) { //Fall 1: Spiel ist gestartet -> Spieler beim nächsten Start rauswerfen
+                if (game.isStarted) {
+                    player.leaveGame = true;
+                    player.active = false;
+                    game.sendCallbackMessageToLobby(game.getGameState);
+                } else { //Fall 2: Noch in der Lobby -> Spieler wird sofort rausgeworfen
+                    game.players.splice(i, 1);
+                    i--;
+                    game.sendMessageToLobby(JSON.stringify({type: 'lobby', users: games.get(lobby).getPlayerNames(Game.users), code: lobby}));
+                }
+            }
+        }
+    });
 }
 
 

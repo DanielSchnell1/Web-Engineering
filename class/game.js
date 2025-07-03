@@ -55,6 +55,7 @@ class Game {
      * @param {function} onGameEndCallback - A callback function to be executed when the game ends.
      */
     constructor(jwt, name) {
+        this.isStarted = false;
         this.players = [];
         this.addPlayer(jwt, name);
         this.deck = null;
@@ -73,8 +74,14 @@ class Game {
      * @param {boolean} [active=true] - Whether the player is active in the game.
      * @param {number} [bet=0] - The player's current bet.
      */
-    addPlayer(jwt, name, cards = [], balance = 100, active = true, bet = 0) {
-        this.players.push({"jwt": jwt, "name": name, "cards": cards, "balance": balance, "active": active, "bet": bet});
+    addPlayer(jwt, name, cards = [], balance = 100, active = false, bet = 0) {
+        this.players.push({"jwt": jwt, 
+            "name": name, 
+            "cards": cards, 
+            "balance": balance, 
+            "active": active, 
+            "bet": bet, 
+            "leaveGame": false});
         logger.info(("Game.js: Player added: " + name));
     }
 
@@ -119,6 +126,9 @@ class Game {
      */
     sendCallbackMessageToLobby(callback, args = []) {
         this.players.forEach((user) => {
+            if(user.leaveGame === true){
+                return;
+            }
             let message = callback(user.jwt, this, ...args);
             Game.users.get(user.jwt).ws.send(message);
             logger.info("Game.js: " + callback.name + `(${user.jwt}, ${this}, ${args.join(", ")}) wurde aufgerufen`);
@@ -147,11 +157,16 @@ class Game {
      * Starts the game, initializes variables, and deals cards.
      */
     start() {
+        this.isStarted = true;
         this.currentPlayer = 0;
         this.currentRound = 0;
         this.deck = this.createShuffledDeck();
         logger.info("game.js: Initialised Game variabels and setting player variabels");
+        this.players = this.players.filter(p => !p.leaveGame);
         this.players.forEach((player) => {
+            if(player.leaveGame) {
+                //EDIT: Spieler entfernen
+            }
             player.active = true;
             player.balance -= player.bet;
             player.bet = 5;
