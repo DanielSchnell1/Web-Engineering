@@ -132,3 +132,100 @@ img {
   max-width: 900px;
   width: 90%;
 }
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .table {
+    width: 90vw;
+    height: 50vw;
+  }
+
+  .community-cards img {
+    width: 50px;
+  }
+
+  .playername {
+    font-size: 140%;
+  }
+
+  .controls input[type=range] {
+    width: 160px;
+  }
+
+  .cards img {
+    width: 70px;
+  }
+}
+
+@media (max-width: 768px) {
+  .table {
+    width: 95vw;
+    height: 60vw;
+    max-height: 400px;
+  }
+
+  .controls {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .playername {
+    font-size: 120%;
+    text-align: center;
+  }
+
+  .cards {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .cards img {
+    width: 50px;
+  }
+
+  .community-cards {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .community-cards img {
+    width: 45px;
+  }
+
+  .infobar {
+    flex-direction: column;
+    gap: 10px;
+    font-size: 1em;
+  }
+}
+
+@media (max-width: 480px) {
+  .table {
+    height: 70vw;
+    border-width: 6px;
+  }
+
+  .controls input[type=range] {
+    width: 140px;
+  }
+
+  .cards img,
+  .community-cards img {
+    width: 40px;
+  }
+
+  button,
+  #betButton,
+  #drawButton,
+  #foldButton {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .infobar {
+    font-size: 0.95em;
+    padding: 10px 15px;
+  }
+}

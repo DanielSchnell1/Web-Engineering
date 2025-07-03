@@ -2,22 +2,34 @@
    font-family: initial;
 }
     
-#lobbyDiv {
-  border: 2px solid #524f4f;
-  padding: 20px;
-  box-sizing: border-box;
-  background-color: #434343;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column; 
-  gap: 10px;             
-  align-items: center;  
-}
-
 #lobbyDiv * {
     padding: 5% auto 5% auto;
     font-family: 'League Spartan', sans-serif;
 }
+
 #lobbyDiv *:hover{
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 600px) {
+  #lobbyDiv {
+    width: 90vw;
+    padding: 30px 15px;
+  }
+
+  #lobbyDiv input[type="text"],
+  #lobbyDiv button {
+    font-size: 1.2em;
+    padding: 14px 20px;
+  }
+
+  h1 {
+    font-size: 2.5em;
+  }
+
+  body {
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+  }
 }
