@@ -112,6 +112,19 @@ class Game {
     }
 
     /**
+     * Sends a JSON message to all players in a specific lobby by using the return value of a method.
+     * @param {function} callback - The method which returns the JSON string.
+     */
+    sendCallbackMessageToLobby(callback) {
+        this.players.forEach(user => {
+            Game.users.get(user.jwt).ws.send(callback(user.jwt));
+        });
+    };
+
+
+
+
+    /**
      * Deals cards to each player.
      * @param {number} [cardsPerPlayer=5] - The number of cards to deal to each player.
      */
@@ -199,6 +212,7 @@ class Game {
         //Spieler hat gefoldet und ist daher nicht mehr aktiv
         if (fold) {
             player.active = false;
+            this.sendCallbackMessageToLobby(this.getGameState);
             return;
         }
 
@@ -234,7 +248,7 @@ class Game {
                     "currentRound": this.getRoundName(this.currentRound)
                 }));
             }else{
-                logger.info("Server.js: Spiel nicht ende identifiziert. Aktualisieren der Lobby ");
+                logger.info("Server.js: Spiel ende nicht identifiziert. Aktualisieren der Lobby ");
                 this.sendMessageToLobby(
                     JSON.stringify({ // type ist ein empty String, da die untenstehenden Variablen jedesmal aktualisiert werden.
                         "type": "",
@@ -276,7 +290,7 @@ class Game {
         if (this.currentRound === 3) {
             return "gameEnd"; // Return message from gameEnd
         }
-        return null;
+        return true;
     }
 
 
@@ -371,7 +385,7 @@ class Game {
          * @param {Map<string, {name: string}>} users - A map of users.
          * @returns {string} A JSON string with the current game state.
          */
-        getGameState(jwt, users)
+        getGameState(jwt)
         {
             const data = {
                 "type": 'getGameState', players: [],
@@ -384,12 +398,12 @@ class Game {
                 if (jwt === player.jwt) {
                     data.self = index;
                     data.players.push({
-                        user: users.get(player.jwt).name,
+                        user: Game.users.get(player.jwt).name,
                         cards: player.cards
                     });
                 } else {
                     data.players.push({
-                        user: users.get(player.jwt).name,
+                        user: Game.users.get(player.jwt).name,
                         cards: Array(player.cards.length).fill("rueckseite")
                     });
                 }
@@ -397,6 +411,8 @@ class Game {
             })
             return JSON.stringify(data);
         }
+
+        
 
         /**
          * A map of card suit rankings.

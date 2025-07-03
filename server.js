@@ -136,7 +136,7 @@ wss.on('connection', (ws) => {
                 game.bet(data.token, data.bet, data.fold);
 
             } else if (data.type === 'getGameState') {
-                let message = games.get(data.lobby).getGameState(data.token, Game.users);
+                let message = games.get(data.lobby).getGameState(data.token);
                 ws.send(message);
              }// else if (data.type === 'restartGame') {
             //     let game = games.get(data.lobby);
