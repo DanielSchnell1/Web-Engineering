@@ -1,6 +1,14 @@
 //const logger = require('C:/DHBW/Semester2/Web_Engineering/Web-Engineering/logger/logger.js');
 const drawCards = [];
-  
+const endGame = document.getElementById('leaderboard');
+
+    // Einsatzanzeige
+    const betSlider = document.getElementById('bet');
+    const betValue = document.getElementById('betValue');
+    const betButton = document.getElementById('betButton');
+    const foldButton = document.getElementById('foldButton');
+    const drawButton = document.getElementById("drawButton");
+
     ws.addEventListener('message', (event) => {
       let data = JSON.parse(event.data);
 
@@ -41,9 +49,10 @@ const drawCards = [];
       }
 
       if(data.type === "getGameState"){
+        let container = document.getElementById(`players`);
+        container.innerHTML = '';
           data.players.forEach((player, index) => {
             if(data.self != index) {
-              let container = document.getElementById(`players`);
               container.innerHTML += `
               <div class="player" style="top: ${600-200*Math.sqrt(10-20*(index/(data.players.length-1)-0.5)**2)}%;">
                 <div class="playername">${player.user}</div>
@@ -81,7 +90,21 @@ const drawCards = [];
               cardsDiv.appendChild(img);
             });
           });
-        
+        container = document.getElementById(`players`);
+            const items = container.querySelectorAll(":scope > div");
+            const b = 100;
+            items.forEach((el, i) => {
+              console.log(b);
+              let angle = Math.PI * (i / (items.length - 1));
+              let y = b - b * Math.sin(angle);
+              el.style.top = y + "%";
+              
+            });
+      }
+
+      if(data.type === 'endGame') {
+        endGame.showModal();
+
       }
     });
 
@@ -100,17 +123,24 @@ const drawCards = [];
     });
 
 
-    // Einsatzanzeige
-    const betSlider = document.getElementById('bet');
-    const betValue = document.getElementById('betValue');
-    const betButton = document.getElementById('betButton');
+
 
     betSlider.addEventListener('input', () => {
       betValue.textContent = betSlider.value;
     });
 
+foldButton.addEventListener("click", () => { 
+  ws.send(JSON.stringify({
+    type: 'bet',
+    lobby: lobby,
+    token: sessionStorage.getItem('jwt') || null,
+    bet: null,
+    fold: true,
+  }));
+});
 
-document.getElementById("drawButton").addEventListener("click", () => {
+
+drawButton.addEventListener("click", () => {
   ws.send(JSON.stringify({
     type: 'draw',
     lobby: lobby,
@@ -119,14 +149,16 @@ document.getElementById("drawButton").addEventListener("click", () => {
   }));
 });
 
-document.getElementById("betButton").addEventListener("click", () => {
+betButton.addEventListener("click", () => {
   ws.send(JSON.stringify({
     type: 'bet',
     lobby: lobby,
     token: sessionStorage.getItem('jwt') || null,
-    bet: document.getElementById("bet").value
+    bet: document.getElementById("bet").value,
+    fold: false,
   }));
 });
+
 
 ws.addEventListener('open', () => {
   ws.send(JSON.stringify({ type: 'getGameState', token: token, lobby: lobby}));

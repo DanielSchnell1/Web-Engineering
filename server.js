@@ -8,7 +8,6 @@ const Game = require('./class/game');
 const express = require('express');
 const {v4: uuidv4} = require('uuid');
 const logger = require('./logger/logger');
-const {Logger} = require("winston");
 
 /**
  * @file server.js
@@ -17,8 +16,6 @@ const {Logger} = require("winston");
  * between the clients and the game logic defined in './class/game.js'.
  */
 
-//EDIT: optional: users als static nach game auslagern
-const users = new Map();
 const games = new Map();
 
 const app = express();
@@ -55,7 +52,7 @@ wss.on('connection', (ws) => {
             }
             if (data.type === 'getToken') {
                 const id = uuidv4();
-                users.set(id, {ws, name: null});
+                Game.users.set(id, {ws, name: null});
                 ws.send(JSON.stringify({type: 'token', token: id}));
                 //logger.log("Server.js: Nutzer beigetreten, called data.type === getToken" + id.toString());
                 console.log("Nutzer beigetreten: " + id);
@@ -74,27 +71,28 @@ wss.on('connection', (ws) => {
                 }
                 game.start();
                 logger.info('Server.js:  called Spiel gestartet. data.type === startGame' + game);
-                sendMessageToLobby(lobby, JSON.stringify({type: 'replace', path: `/game/${lobby}`}));
+                game.sendMessageToLobby(JSON.stringify({type: 'replace', path: `/game/${lobby}`}));
 
 
             } else if (data.type === 'init') { // Erstelle Lobby oder trete bestehender bei
-                if (data.name && users.has(data.token)) {
-                    user = users.get(data.token);
+                if (data.name && Game.users.has(data.token)) {
+                    user = Game.users.get(data.token);
                     user.name = data.name;
                     if (games.has(data.lobby)) { //Fall 1: Nutzer schickt validen Lobbycode
-                        users.set(data.token, user);
-                        games.get(data.lobby).addPlayer(data.token, user.name);
+                        let game = games.get(data.lobby);
+                        Game.users.set(data.token, user);
+                        game.addPlayer(data.token, user.name);
                         ws.send(JSON.stringify({type: 'redirect', path: `lobby/${data.lobby}`}));
                         //update an die Lobby mit neuem Spieler
-                        sendMessageToLobby(data.lobby, JSON.stringify({
+                        game.sendMessageToLobby(JSON.stringify({
                             type: 'lobby',
-                            users: games.get(data.lobby).getPlayerNames(users)
+                            users: games.get(data.lobby).getPlayerNames(Game.users)
                         }));
                         logger.info("Server.js: ")
-                        console.log(games.get(data.lobby).getPlayerNames(users));
+                        console.log(games.get(data.lobby).getPlayerNames(Game.users));
 
                     } else if (!data.lobby) {    //Fall 2: Nutzer schickt kein Lobbycode
-                        users.set(data.token, user);
+                        Game.users.set(data.token, user);
                         let lobby = generateLobbyCode();
                         console.log(lobby);
                         games.set(lobby, new Game(data.token, user.name));
@@ -109,23 +107,23 @@ wss.on('connection', (ws) => {
                 }
 
             } else if (data.type === 'ws') {
-                if (users.has(data.token)) {
-                    let user = users.get(data.token);
+                if (Game.users.has(data.token)) {
+                    let user = Game.users.get(data.token);
                     user.ws = ws;
-                    users.set(data.token, user);
+                    Game.users.set(data.token, user);
                 }
 
 
             } else if (data.type === 'getLobbyState') {
                 lobby = getLobby(data.token);
-                ws.send(JSON.stringify({type: 'lobby', users: games.get(lobby).getPlayerNames(users), code: lobby}));
+                ws.send(JSON.stringify({type: 'lobby', users: games.get(lobby).getPlayerNames(Game.users), code: lobby}));
 
 
             } else if (data.type === 'draw') {
                 let game = games.get(data.lobby);
                 let message = game.drawCards(data.token, data.cards);
                 ws.send(message);
-                sendMessageToLobby(data.lobby, JSON.stringify({
+                game.sendMessageToLobby(JSON.stringify({
                     "type": "pulse",
                     "cards": data.cards,
                     "currentPlayer": game.getCurrentPlayer(),
@@ -134,28 +132,10 @@ wss.on('connection', (ws) => {
 
             } else if (data.type === 'bet') {
                 let game = games.get(data.lobby);
-                let messageString = game.bet(data.token, data.bet, data.fold);
+                game.bet(data.token, data.bet, data.fold);
 
-                //Test ob bet was zurückbekommen hat
-                if (messageString) {
-                    // Wir parsen die Nachricht, um ihren Typ zu prüfen
-                    const message = JSON.parse(messageString);
-
-                    // Prüfen, ob die Runde beendet wurde
-                    if (message.type === 'gameEnd') {
-                        logger.info("Server.js: Spiel ende identifiziert. aufruf game.js gameEnd()");
-                        // beenden des Spiels und updaten der Lobby
-                        game.gameEnd();
-                        sendMessageToLobby(data.lobby, messageString);
-
-                    } else {
-                        // Wenn es kein Rundenende ist (type=""), updaten der lobby
-                        logger.info("Server.js: Spiel nicht ende identifiziert. Aktualisieren der Lobby ");
-                        sendMessageToLobby(data.lobby, messageString);
-                    }
-                }
             } else if (data.type === 'getGameState') {
-                let message = games.get(data.lobby).getGameState(data.token, users);
+                let message = games.get(data.lobby).getGameState(data.token);
                 ws.send(message);
              }// else if (data.type === 'restartGame') {
             //     let game = games.get(data.lobby);
@@ -177,10 +157,10 @@ wss.on('connection', (ws) => {
 
 
     ws.on('close', () => { // Wird die Verbindung getrennt, so hat der Nutzer 10 Sekunden Zeit um sich neu zu verbinden, sonst wird er gelöscht
-        if (userToken && users.has(userToken)) {
+        if (userToken && Game.users.has(userToken)) {
             setTimeout(() => {
-                if (users.get(userToken)?.ws.readyState !== WebSocket.OPEN) {
-                    users.delete(userToken);
+                if (Game.users.get(userToken)?.ws.readyState !== WebSocket.OPEN) {
+                    Game.users.delete(userToken);
                     console.log("User durch Close gelöscht:", userToken);
                 }
             }, 10000);
@@ -197,7 +177,7 @@ wss.on('connection', (ws) => {
  */
 function logUsers() {
     console.log('--- Aktuelle Nutzerliste ---');
-    for (const [token, userData] of users.entries()) {
+    for (const [token, userData] of Game.users.entries()) {
         console.log(`Token: ${token}`);
         console.log(`  Name: ${userData.name}`);
         console.log(`  WebSocket offen: ${userData.ws.readyState === 1}`); // 1 = OPEN
@@ -205,16 +185,6 @@ function logUsers() {
     console.log('----------------------------');
 }
 
-/**
- * Sends a JSON message to all players in a specific lobby.
- * @param {string} lobby - The lobby code to send the message to.
- * @param {string} JSON - The JSON string message to send to each player.
- */
-function sendMessageToLobby(lobby, JSON) {
-    games.get(lobby).players.forEach(user => {
-        users.get(user.jwt).ws.send(JSON);
-    });
-}
 
 /**
  * Finds the lobby code for a given player token.

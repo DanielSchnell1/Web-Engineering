@@ -10,6 +10,8 @@ const {log} = require("winston");
 
 class Game {
 
+    static users = new Map();
+
     //Die erste und die dritte Runde sind Setzrunden
     static betRounds = [0, 2];
 
@@ -95,8 +97,35 @@ class Game {
      * @returns {string} The name of the round.
      */
     getRoundName(index) {
-        return ['1. Setzrunde', 'Tauschrunde', '2. Setzrunde'][index];
+        return ['1. Setzrunde', 'Tauschrunde', '2. Setzrunde', 'Showdown'][index];
     }
+
+
+    /**
+     * Sends a JSON message to all players in a specific lobby.
+     * @param {string} JSON - The JSON string message to send to each player.
+     */
+    sendMessageToLobby(JSON) {
+        this.players.forEach(user => {
+            Game.users.get(user.jwt).ws.send(JSON);
+        });
+    }
+
+    /**
+     * Sends a JSON message to all players in a specific lobby by using the return value of a method.
+     * @param {function} callback - The method which returns the JSON string.
+     */
+    sendCallbackMessageToLobby(callback) {
+        let self = this;
+        this.players.forEach((user) => {
+            let message = callback(user.jwt, self)
+            Game.users.get(user.jwt).ws.send(message);
+            logger.info("Callback:" + user.name + message);
+        });
+    };
+
+
+
 
     /**
      * Deals cards to each player.
@@ -183,12 +212,6 @@ class Game {
         let index = this.players.findIndex(p => p.jwt === playerId);
         let player = this.players[index];
 
-        //Spieler hat gefoldet und ist daher nicht mehr aktiv
-        if (fold) {
-            player.active = false;
-            return;
-        }
-
         //Validiere Input
         //EDIT: falls Spieler weniger balance hat, als nötig, ist ihm erlaubt alles zu setzen
         if (!player.active ||
@@ -197,7 +220,14 @@ class Game {
             bet > player.balance ||
             !Game.betRounds.includes(this.currentRound) ||
             this.getCurrentBet() > bet) {
-            logger.error("game.js: Unzulässiger einsatz")
+            logger.error("game.js: Unzulässiger Einsatz")
+            return;
+        }
+
+        //Spieler hat gefoldet und ist daher nicht mehr aktiv
+        if (fold) {
+            player.active = false;
+            this.sendCallbackMessageToLobby(this.getGameState);
             return;
         }
 
@@ -209,21 +239,27 @@ class Game {
         if (updateResult) {
             // Fall 1: Das Spiel ist komplett zu Ende
             if (updateResult === "gameEnd") { // gameEnd() gibt einen String zurück
-                return JSON.stringify({
+                logger.info("Server.js: Spiel ende identifiziert. aufruf game.js gameEnd()");
+                // beenden des Spiels und updaten der Lobby
+                this.gameEnd();
+                this.sendMessageToLobby(
+                JSON.stringify({
                     "type": "gameEnd",
                     "currentPlayer": this.getCurrentPlayer(),
                     "currentBet": this.getCurrentBet(),
                     "currentPot": this.getCurrentPot(),
                     "currentRound": this.getRoundName(this.currentRound)
-                });
+                }));
             }else{
-                return JSON.stringify({ // type ist ein empty String, da die untenstehenden Variablen jedesmal aktualisiert werden.
-                    "type": "",
-                    "currentPlayer": this.getCurrentPlayer(),
-                    "currentBet": this.getCurrentBet(),
-                    "currentPot": this.getCurrentPot(),
-                    "currentRound": this.getRoundName(this.currentRound)
-                });
+                logger.info("Server.js: Spiel ende nicht identifiziert. Aktualisieren der Lobby ");
+                this.sendMessageToLobby(
+                    JSON.stringify({ // type ist ein empty String, da die untenstehenden Variablen jedesmal aktualisiert werden.
+                        "type": "",
+                        "currentPlayer": this.getCurrentPlayer(),
+                        "currentBet": this.getCurrentBet(),
+                        "currentPot": this.getCurrentPot(),
+                        "currentRound": this.getRoundName(this.currentRound)
+                }));
             }
         }
 
@@ -257,7 +293,7 @@ class Game {
         if (this.currentRound === 3) {
             return "gameEnd"; // Return message from gameEnd
         }
-        return null;
+        return true;
     }
 
 
@@ -352,32 +388,40 @@ class Game {
          * @param {Map<string, {name: string}>} users - A map of users.
          * @returns {string} A JSON string with the current game state.
          */
-        getGameState(jwt, users)
+        getGameState(jwt, self = this)
         {
             const data = {
-                "type": 'getGameState', players: [],
-                "currentPlayer": this.getCurrentPlayer(),
-                "currentBet": this.getCurrentBet(),
-                "currentPot": this.getCurrentPot(),
-                "currentRound": this.getRoundName(this.currentRound)
+                "type": 'getGameState', 
+                "players": [],
+                "currentPlayer": self.getCurrentPlayer(),
+                "currentBet": self.getCurrentBet(),
+                "currentPot": self.getCurrentPot(),
+                "currentRound": self.getRoundName(self.currentRound),
+                "self": null,
             };
-            this.players.forEach((player, index) => {
+            self.players.forEach((player, index) => {
+                if(!player.active){
+                    return;
+                }
                 if (jwt === player.jwt) {
                     data.self = index;
                     data.players.push({
-                        user: users.get(player.jwt).name,
+                        user: Game.users.get(player.jwt).name,
                         cards: player.cards
                     });
                 } else {
                     data.players.push({
-                        user: users.get(player.jwt).name,
+                        user: Game.users.get(player.jwt).name,
                         cards: Array(player.cards.length).fill("rueckseite")
                     });
                 }
                 logger.info("game.js: Startet Game. Set all Game Variables. Set corresponding cards for player");
             })
+            console.log("getGameState:" + JSON.stringify(data));
             return JSON.stringify(data);
         }
+
+        
 
         /**
          * A map of card suit rankings.
