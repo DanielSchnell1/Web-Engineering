@@ -114,15 +114,15 @@ class Game {
     /**
      * Sends a JSON message to all players in a specific lobby by using the return value of a method.
      * @param {function} callback - The method which returns the JSON string.
+     * @param {Array<any>} args
      */
-    sendCallbackMessageToLobby(callback) {
-        let self = this;
+    sendCallbackMessageToLobby(callback, args = []) {
         this.players.forEach((user) => {
-            let message = callback(user.jwt, self)
+            let message = callback(user.jwt, this, ...args);
             Game.users.get(user.jwt).ws.send(message);
-            logger.info("Callback:" + user.name + message);
+            logger.info("Game.js: " + callback.name + `(${user.jwt}, ${this}, ${args.join(", ")}) wurde aufgerufen`);
         });
-    };
+    }
 
 
 
@@ -214,32 +214,36 @@ class Game {
 
         //Validiere Input
         //EDIT: falls Spieler weniger balance hat, als nötig, ist ihm erlaubt alles zu setzen
-        if (!player.active ||
+        if (!fold &&
+            (!player.active ||
             bet - player.bet < 10 ||
             this.currentPlayer != index ||
             bet > player.balance ||
             !Game.betRounds.includes(this.currentRound) ||
-            this.getCurrentBet() > bet) {
+            this.getCurrentBet() > bet)) {
             logger.error("game.js: Unzulässiger Einsatz")
             return;
         }
 
-        //Spieler hat gefoldet und ist daher nicht mehr aktiv
-        if (fold) {
-            player.active = false;
-            this.sendCallbackMessageToLobby(this.getGameState);
-            return;
-        }
+
 
         player.bet = bet;
         logger.info("game.js: Bet of player: " + player.name + " set to: " + player.bet);
         const updateResult = this.updateCurrentPlayer();
 
+        //Spieler hat gefoldet und ist daher nicht mehr aktiv
+        if (fold) {
+            player.active = false;
+            this.sendCallbackMessageToLobby(this.getGameState);
+            logger.info("Game.js: Fold");
+            return;
+        }
+
         // Prüfen, was von updateCurrentPlayer zurückkam
         if (updateResult) {
             // Fall 1: Das Spiel ist komplett zu Ende
             if (updateResult === "gameEnd") { // gameEnd() gibt einen String zurück
-                logger.info("Server.js: Spiel ende identifiziert. aufruf game.js gameEnd()");
+                logger.info("Game.js: Spiel ende identifiziert. aufruf game.js gameEnd()");
                 // beenden des Spiels und updaten der Lobby
                 this.gameEnd();
                 this.sendMessageToLobby(
@@ -251,7 +255,7 @@ class Game {
                     "currentRound": this.getRoundName(this.currentRound)
                 }));
             }else{
-                logger.info("Server.js: Spiel ende nicht identifiziert. Aktualisieren der Lobby ");
+                logger.info("Game.js: Spiel ende nicht identifiziert. Aktualisieren der Lobby ");
                 this.sendMessageToLobby(
                     JSON.stringify({ // type ist ein empty String, da die untenstehenden Variablen jedesmal aktualisiert werden.
                         "type": "",
@@ -272,14 +276,19 @@ class Game {
      * @returns {string|undefined} A JSON string with the game end state, or undefined if the game continues.
      */
     updateCurrentPlayer() {
-        this.currentPlayer = (this.currentPlayer + 1) % this.players.length;
+        if(this.players.filter(p => p.active).length < 2) {
+            //EDIT: Falls nur noch einer (oder weniger) Spieler mitspielen, soll das Spiel beendet werden
+        }
+        do {
+            this.currentPlayer = (this.currentPlayer + 1) % this.players.length;
+        } while(!this.players[this.currentPlayer].active);
 
         if (this.currentPlayer == 0) {
             this.betNoRepeat = false;
         }
 
 
-        //beendet die Tausch/Setzrunde erst, wenn Alle Einsätze gleich sind.
+        //beendet die Tausch/Setzrunde erst, wenn Alle Einsätze gleich sind. Oder wenn der erste Spieler dran ist (bei Tauschrunden)
         if (this.players.every(p => p.bet === this.players[0].bet && (!this.betNoRepeat || this.currentPlayer == 0))) {
             this.currentRound = this.currentRound + 1;
             if (!this.betNoRepeat) {
@@ -291,6 +300,7 @@ class Game {
 
         //Return message from gameEnd
         if (this.currentRound === 3) {
+            this.sendCallbackMessageToLobby(this.getGameState);
             return "gameEnd"; // Return message from gameEnd
         }
         return true;
@@ -386,9 +396,11 @@ class Game {
          * Gets the current game state for a specific player.
          * @param {string} jwt - The JSON Web Token of the player requesting the game state.
          * @param {Map<string, {name: string}>} users - A map of users.
+         * @param {Game} self - If getGameState is called from sendCallableMessageToLobby()
+         * @param {boolean} reveal - If True: Returns All Player Cards
          * @returns {string} A JSON string with the current game state.
          */
-        getGameState(jwt, self = this)
+        getGameState(jwt, self = this, reveal = false)
         {
             const data = {
                 "type": 'getGameState', 
@@ -400,23 +412,24 @@ class Game {
                 "self": null,
             };
             self.players.forEach((player, index) => {
-                if(!player.active){
+                if (!player.active) {
                     return;
                 }
-                if (jwt === player.jwt) {
+
+                const isSelf = jwt === player.jwt;
+                const showCards = self.currentRound == 3 || isSelf || reveal;
+
+                if (isSelf) {
                     data.self = index;
-                    data.players.push({
-                        user: Game.users.get(player.jwt).name,
-                        cards: player.cards
-                    });
-                } else {
-                    data.players.push({
-                        user: Game.users.get(player.jwt).name,
-                        cards: Array(player.cards.length).fill("rueckseite")
-                    });
                 }
-                logger.info("game.js: Startet Game. Set all Game Variables. Set corresponding cards for player");
-            })
+
+                data.players.push({
+                    user: Game.users.get(player.jwt).name,
+                    cards: showCards ? player.cards : Array(player.cards.length).fill("rueckseite")
+                });
+
+                logger.info("game.js: Started game state generation. Assigned cards for player");
+            });
             console.log("getGameState:" + JSON.stringify(data));
             return JSON.stringify(data);
         }
