@@ -2,11 +2,11 @@ body, input, button, h1, h2, h3, p {
   font-family: initial;
 }
         
-.oldButton {
+#foldButton {
   background-color: #aa2a2a;
 }
 
-.foldButton:hover{
+#foldButton:hover{
   background-color: #871f1f;
 }
         

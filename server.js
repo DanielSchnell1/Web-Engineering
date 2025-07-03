@@ -1,5 +1,6 @@
 //EDIT: Mehrfaches starten des SPiels verhindern
 //EDIT: Dokumentation: README.md schreiben
+//EDIT: getLobby(data.token) sucht die erste Lobby des Spielers. Es muss aber vor dem Aufruf validiert werden, damit der Spieler nur in einer Lobby ist.
 
 const http = require('http');
 const path = require('path');

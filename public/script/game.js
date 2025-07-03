@@ -18,6 +18,13 @@ const endGame = document.getElementById('leaderboard');
     }
     if (data.currentBet !== undefined) {
         document.getElementById("currentBet").textContent = "Einsatz: " + data.currentBet;
+        const betSlider = document.getElementById("bet")
+        if(data.currentBet > betSlider.max){
+          betSlider.min = betSlider.max;
+        } else {
+          betSlider.min = data.currentBet;
+        }
+        betSlider.value = betSlider.min;
     }
     if (data.currentPot !== undefined) {
         document.getElementById("currentPot").textContent = "Pot: " + data.currentPot;
@@ -49,28 +56,29 @@ const endGame = document.getElementById('leaderboard');
       }
 
       if(data.type === "getGameState"){
-        let container = document.getElementById(`players`);
-        container.innerHTML = '';
+        let container_players = document.getElementById(`players`);
+        let container_self = document.getElementById(`self`);
+
+        document.getElementById("bet").max = data.players[data.self].balance;
+
+        container_players.innerHTML = '';
+        container_self.innerHTML = '';
           data.players.forEach((player, index) => {
+            if(!player.user){
+              return;
+            }
             if(data.self != index) {
-              container.innerHTML += `
-              <div class="player" style="top: ${600 - 200 * Math.sqrt(10 - 20 * (index / (data.players.length - 1) - 0.5) ** 2)}%;">
-                <div class="playerdata">
-                <div class="playername">${player.user}</div>
-                <div class ="playername">${player.balance} </div>
-                </div>
+              container_players.innerHTML += `
+              <div class="player" style="top: ${600-200*Math.sqrt(10-20*(index/(data.players.length-1)-0.5)**2)}%;">
+                <div class="playername">${player.user} - ${player.balance} Chips</div>
                 <div class="cards" id="cards${index}"></div>
               </div>
               `;
             } else {
-              let container = document.getElementById(`self`);
-              container.innerHTML += `
+              container_self.innerHTML += `
               <div class="player">
-                <div class="playerdata">
-                <div class="playername">${player.user}</div>
-                <div class = "playername">${player.balance} </div>
-                </div>
-                <div class="cards" id="cards${index}"></div>
+                <div class="playername">${player.user} - ${player.balance} Chips</div>
+                <div class="cards" id="cards${index}"></div> 
               </div>
               `;
             }
@@ -96,8 +104,7 @@ const endGame = document.getElementById('leaderboard');
               cardsDiv.appendChild(img);
             });
           });
-        container = document.getElementById(`players`);
-            const items = container.querySelectorAll(":scope > div");
+            const items = container_players.querySelectorAll(":scope > div");
             const b = 100;
             items.forEach((el, i) => {
               console.log(b);
