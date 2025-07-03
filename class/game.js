@@ -210,7 +210,7 @@ class Game {
             bet > player.balance ||
             !Game.betRounds.includes(this.currentRound) ||
             this.getCurrentBet() > bet) {
-            logger.error("game.js: Unzulässiger einsatz")
+            logger.error("game.js: Unzulässiger Einsatz")
             return;
         }
 
@@ -222,21 +222,27 @@ class Game {
         if (updateResult) {
             // Fall 1: Das Spiel ist komplett zu Ende
             if (updateResult === "gameEnd") { // gameEnd() gibt einen String zurück
-                return JSON.stringify({
+                logger.info("Server.js: Spiel ende identifiziert. aufruf game.js gameEnd()");
+                // beenden des Spiels und updaten der Lobby
+                this.gameEnd();
+                this.sendMessageToLobby(
+                JSON.stringify({
                     "type": "gameEnd",
                     "currentPlayer": this.getCurrentPlayer(),
                     "currentBet": this.getCurrentBet(),
                     "currentPot": this.getCurrentPot(),
                     "currentRound": this.getRoundName(this.currentRound)
-                });
+                }));
             }else{
-                return JSON.stringify({ // type ist ein empty String, da die untenstehenden Variablen jedesmal aktualisiert werden.
-                    "type": "",
-                    "currentPlayer": this.getCurrentPlayer(),
-                    "currentBet": this.getCurrentBet(),
-                    "currentPot": this.getCurrentPot(),
-                    "currentRound": this.getRoundName(this.currentRound)
-                });
+                logger.info("Server.js: Spiel nicht ende identifiziert. Aktualisieren der Lobby ");
+                this.sendMessageToLobby(
+                    JSON.stringify({ // type ist ein empty String, da die untenstehenden Variablen jedesmal aktualisiert werden.
+                        "type": "",
+                        "currentPlayer": this.getCurrentPlayer(),
+                        "currentBet": this.getCurrentBet(),
+                        "currentPot": this.getCurrentPot(),
+                        "currentRound": this.getRoundName(this.currentRound)
+                }));
             }
         }
 

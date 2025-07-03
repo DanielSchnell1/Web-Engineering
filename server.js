@@ -133,26 +133,8 @@ wss.on('connection', (ws) => {
 
             } else if (data.type === 'bet') {
                 let game = games.get(data.lobby);
-                let messageString = game.bet(data.token, data.bet, data.fold);
+                game.bet(data.token, data.bet, data.fold);
 
-                //Test ob bet was zurückbekommen hat
-                if (messageString) {
-                    // Wir parsen die Nachricht, um ihren Typ zu prüfen
-                    const message = JSON.parse(messageString);
-
-                    // Prüfen, ob die Runde beendet wurde
-                    if (message.type === 'gameEnd') {
-                        logger.info("Server.js: Spiel ende identifiziert. aufruf game.js gameEnd()");
-                        // beenden des Spiels und updaten der Lobby
-                        game.gameEnd();
-                        game.sendMessageToLobby(messageString);
-
-                    } else {
-                        // Wenn es kein Rundenende ist (type=""), updaten der lobby
-                        logger.info("Server.js: Spiel nicht ende identifiziert. Aktualisieren der Lobby ");
-                        game.sendMessageToLobby(messageString);
-                    }
-                }
             } else if (data.type === 'getGameState') {
                 let message = games.get(data.lobby).getGameState(data.token, Game.users);
                 ws.send(message);
