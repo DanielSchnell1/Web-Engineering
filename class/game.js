@@ -18,6 +18,7 @@ class Game {
     //Die zweite Runde ist eine Tauschrunde
     static drawRounds = [1];
 
+
     /**
      * The sequence of rounds in the game.
      * 0 = Betting round, 1 = Drawing round, 2 = End of game.
@@ -152,11 +153,12 @@ class Game {
         logger.info("game.js: Initialised Game variabels and setting player variabels");
         this.players.forEach((player) => {
             player.active = true;
-            player.balance -= this.bet;
+            player.balance -= player.bet;
             player.bet = 5;
             player.cards = [];
         });
         this.dealCards();
+        this.sendCallbackMessageToLobby(this.getGameState);
     }
 
     /**
@@ -216,12 +218,13 @@ class Game {
         //EDIT: falls Spieler weniger balance hat, als nötig, ist ihm erlaubt alles zu setzen
         if (!fold &&
             (!player.active ||
-            bet - player.bet < 10 ||
             this.currentPlayer != index ||
             bet > player.balance ||
             !Game.betRounds.includes(this.currentRound) ||
             this.getCurrentBet() > bet)) {
-            logger.error("game.js: Unzulässiger Einsatz")
+            logger.error(`game.js: Unzulässiger Einsatz: fold: ${fold}, active: ${player.active}, 
+                betDiff: ${bet-player.bet}, currentPlayer: ${this.currentPlayer != index}, balance: ${player.balance}
+                , currentRound: ${this.currentRound}, currentBet: ${this.getCurrentBet}`);
             return;
         }
 
@@ -231,7 +234,7 @@ class Game {
         logger.info("game.js: Bet of player: " + player.name + " set to: " + player.bet);
         const updateResult = this.updateCurrentPlayer();
 
-        //Spieler hat gefoldet und ist daher nicht mehr aktiv
+        //Fall 1: Spieler hat gefoldet und ist daher nicht mehr aktiv
         if (fold) {
             player.active = false;
             this.sendCallbackMessageToLobby(this.getGameState);
@@ -241,7 +244,7 @@ class Game {
 
         // Prüfen, was von updateCurrentPlayer zurückkam
         if (updateResult) {
-            // Fall 1: Das Spiel ist komplett zu Ende
+            // Fall 2: Das Spiel ist komplett zu Ende
             if (updateResult === "gameEnd") { // gameEnd() gibt einen String zurück
                 logger.info("Game.js: Spiel ende identifiziert. aufruf game.js gameEnd()");
                 // beenden des Spiels und updaten der Lobby
@@ -254,6 +257,7 @@ class Game {
                     "currentPot": this.getCurrentPot(),
                     "currentRound": this.getRoundName(this.currentRound)
                 }));
+            //Fall 3: Gültiger Einsatz, Spiel geht weiter.
             }else{
                 logger.info("Game.js: Spiel ende nicht identifiziert. Aktualisieren der Lobby ");
                 this.sendMessageToLobby(
@@ -262,7 +266,7 @@ class Game {
                         "currentPlayer": this.getCurrentPlayer(),
                         "currentBet": this.getCurrentBet(),
                         "currentPot": this.getCurrentPot(),
-                        "currentRound": this.getRoundName(this.currentRound)
+                        "currentRound": this.getRoundName(this.currentRound),
                 }));
             }
         }
@@ -277,7 +281,8 @@ class Game {
      */
     updateCurrentPlayer() {
         if(this.players.filter(p => p.active).length < 2) {
-            this.sendCallbackMessageToLobby(this.getGameState);
+            this.currentRound = 3;
+            this.sendCallbackMessageToLobby(this.getGameState, true);
             return "gameEnd"; // Return message from gameEnd
             //EDIT: Falls nur noch einer (oder weniger) Spieler mitspielen, soll das Spiel beendet werden
         }
@@ -399,6 +404,7 @@ class Game {
             return this.players[this.currentPlayer].name;
         }
 
+
         /**
          * Gets the current game state for a specific player.
          * @param {string} jwt - The JSON Web Token of the player requesting the game state.
@@ -421,22 +427,23 @@ class Game {
             self.players.forEach((player, index) => {
                 if (!player.active) {
                     data.players.push({
-                        user: null,
-                        cards: null
+                        "user": null,
+                        "cards": null,
+                        "balance": null,
                     });
                     return;
                 }
 
                 const isSelf = jwt === player.jwt;
                 const showCards = self.currentRound == 3 || isSelf || reveal;
-
                 if (isSelf) {
                     data.self = index;
                 }
 
                 data.players.push({
-                    user: Game.users.get(player.jwt).name,
-                    cards: showCards ? player.cards : Array(player.cards.length).fill("rueckseite")
+                    "user": player.name,
+                    "cards": showCards ? player.cards : Array(player.cards.length).fill("rueckseite"),
+                    "balance": player.balance
                 });
 
                 logger.info("game.js: Started game state generation. Assigned cards for player");
