@@ -137,17 +137,7 @@ wss.on('connection', (ws) => {
             } else if (data.type === 'getGameState') {
                 let message = games.get(data.lobby).getGameState(data.token);
                 ws.send(message);
-             }// else if (data.type === 'restartGame') {
-            //     let game = games.get(data.lobby);
-            //     // Prüfen, ob token berechtigt ist, z.B. Spieler 0:
-            //     if (game.players[0].jwt !== data.token) {
-            //         ws.send(JSON.stringify({type: 'error', message: 'Keine Berechtigung zum Neustart'}));
-            //         return;
-            //     }
-            //     game.resetGame(); // deine Reset-Logik in Game
-            //     game.start();     // Spiel neu starten (Runde starten)
-            //     sendMessageToLobby(data.lobby, JSON.stringify({type: 'replace', path: `/game/${data.lobby}`}));
-            // }
+             }
 
 
         } catch (e) {
