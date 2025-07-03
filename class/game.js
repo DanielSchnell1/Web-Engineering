@@ -116,8 +116,11 @@ class Game {
      * @param {function} callback - The method which returns the JSON string.
      */
     sendCallbackMessageToLobby(callback) {
-        this.players.forEach(user => {
-            Game.users.get(user.jwt).ws.send(callback(user.jwt));
+        let self = this;
+        this.players.forEach((user) => {
+            let message = callback(user.jwt, self)
+            Game.users.get(user.jwt).ws.send(message);
+            logger.info("Callback:" + user.name + message);
         });
     };
 
@@ -209,13 +212,6 @@ class Game {
         let index = this.players.findIndex(p => p.jwt === playerId);
         let player = this.players[index];
 
-        //Spieler hat gefoldet und ist daher nicht mehr aktiv
-        if (fold) {
-            player.active = false;
-            this.sendCallbackMessageToLobby(this.getGameState);
-            return;
-        }
-
         //Validiere Input
         //EDIT: falls Spieler weniger balance hat, als nötig, ist ihm erlaubt alles zu setzen
         if (!player.active ||
@@ -225,6 +221,13 @@ class Game {
             !Game.betRounds.includes(this.currentRound) ||
             this.getCurrentBet() > bet) {
             logger.error("game.js: Unzulässiger Einsatz")
+            return;
+        }
+
+        //Spieler hat gefoldet und ist daher nicht mehr aktiv
+        if (fold) {
+            player.active = false;
+            this.sendCallbackMessageToLobby(this.getGameState);
             return;
         }
 
@@ -385,16 +388,21 @@ class Game {
          * @param {Map<string, {name: string}>} users - A map of users.
          * @returns {string} A JSON string with the current game state.
          */
-        getGameState(jwt)
+        getGameState(jwt, self = this)
         {
             const data = {
-                "type": 'getGameState', players: [],
-                "currentPlayer": this.getCurrentPlayer(),
-                "currentBet": this.getCurrentBet(),
-                "currentPot": this.getCurrentPot(),
-                "currentRound": this.getRoundName(this.currentRound)
+                "type": 'getGameState', 
+                "players": [],
+                "currentPlayer": self.getCurrentPlayer(),
+                "currentBet": self.getCurrentBet(),
+                "currentPot": self.getCurrentPot(),
+                "currentRound": self.getRoundName(self.currentRound),
+                "self": null,
             };
-            this.players.forEach((player, index) => {
+            self.players.forEach((player, index) => {
+                if(!player.active){
+                    return;
+                }
                 if (jwt === player.jwt) {
                     data.self = index;
                     data.players.push({
@@ -409,6 +417,7 @@ class Game {
                 }
                 logger.info("game.js: Startet Game. Set all Game Variables. Set corresponding cards for player");
             })
+            console.log("getGameState:" + JSON.stringify(data));
             return JSON.stringify(data);
         }
 

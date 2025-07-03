@@ -16,7 +16,6 @@ const logger = require('./logger/logger');
  * between the clients and the game logic defined in './class/game.js'.
  */
 
-//EDIT: optional: users als static nach game auslagern
 const games = new Map();
 
 const app = express();

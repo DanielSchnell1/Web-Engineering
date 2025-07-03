@@ -49,9 +49,10 @@ const endGame = document.getElementById('leaderboard');
       }
 
       if(data.type === "getGameState"){
+        let container = document.getElementById(`players`);
+        container.innerHTML = '';
           data.players.forEach((player, index) => {
             if(data.self != index) {
-              let container = document.getElementById(`players`);
               container.innerHTML += `
               <div class="player" style="top: ${600-200*Math.sqrt(10-20*(index/(data.players.length-1)-0.5)**2)}%;">
                 <div class="playername">${player.user}</div>
