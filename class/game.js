@@ -357,26 +357,14 @@ class Game {
                 }
             }
         }
-        logger.info("game.js: Winner: " + winner.name);
-        const pot = this.getCurrentPot();
-        this.setWinningPotToWinner(winner);
-
+        logger.info("game.js: Winner: " + winner.name + "Pot:" + this.getCurrentPot());
+        winner.balance += this.getCurrentPot();
         setTimeout(() => {
             logger.info("game.js: Starting new Game");
             this.start();
         }, 3000);
     }
 
-        /**
-         * Adds the pot to the winner's balance.
-         * @param {object} winner - The winning player object.
-         */
-        setWinningPotToWinner(winner)
-        {
-            const pot = this.getCurrentPot()
-            winner.balance += pot
-            logger.info("game.js: Payer" + winner.name + " won: " + pot)
-        }
 
 
         /**

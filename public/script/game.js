@@ -24,6 +24,7 @@ const endGame = document.getElementById('leaderboard');
         } else {
           betSlider.min = data.currentBet;
         }
+        betSlider.value = betSlider.min;
     }
     if (data.currentPot !== undefined) {
         document.getElementById("currentPot").textContent = "Pot: " + data.currentPot;
@@ -58,7 +59,7 @@ const endGame = document.getElementById('leaderboard');
         let container_players = document.getElementById(`players`);
         let container_self = document.getElementById(`self`);
 
-        document.getElementById("bet").max = data.balance;
+        document.getElementById("bet").max = data.players[data.self].balance;
         
         container_players.innerHTML = '';
         container_self.innerHTML = '';
