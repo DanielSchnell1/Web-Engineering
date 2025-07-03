@@ -55,6 +55,9 @@ const endGame = document.getElementById('leaderboard');
         container_players.innerHTML = '';
         container_self.innerHTML = '';
           data.players.forEach((player, index) => {
+            if(!player.user){
+              return;
+            }
             if(data.self != index) {
               container_players.innerHTML += `
               <div class="player" style="top: ${600-200*Math.sqrt(10-20*(index/(data.players.length-1)-0.5)**2)}%;">

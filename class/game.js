@@ -277,6 +277,8 @@ class Game {
      */
     updateCurrentPlayer() {
         if(this.players.filter(p => p.active).length < 2) {
+            this.sendCallbackMessageToLobby(this.getGameState);
+            return "gameEnd"; // Return message from gameEnd
             //EDIT: Falls nur noch einer (oder weniger) Spieler mitspielen, soll das Spiel beendet werden
         }
         do {
@@ -289,7 +291,12 @@ class Game {
 
 
         //beendet die Tausch/Setzrunde erst, wenn Alle Einsätze gleich sind. Oder wenn der erste Spieler dran ist (bei Tauschrunden)
-        if (this.players.every(p => p.bet === this.players[0].bet && (!this.betNoRepeat || this.currentPlayer == 0))) {
+        if (
+            this.players
+                .filter(p => p.active)
+                .every(p => p.bet === this.players.find(p2 => p2.active).bet) &&
+            (!this.betNoRepeat || this.currentPlayer === 0)
+        ) {
             this.currentRound = this.currentRound + 1;
             if (!this.betNoRepeat) {
                 this.betNoRepeat = true;
@@ -413,6 +420,10 @@ class Game {
             };
             self.players.forEach((player, index) => {
                 if (!player.active) {
+                    data.players.push({
+                        user: null,
+                        cards: null
+                    });
                     return;
                 }
 
