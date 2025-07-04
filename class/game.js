@@ -261,51 +261,32 @@ class Game {
         }
 
 
-
         
-
-        const updateResult = this.updateCurrentPlayer();
 
         //Fall 1: Spieler hat gefoldet und ist daher nicht mehr aktiv
         if (fold) {
             player.active = false;
+            this.updateCurrentPlayer();
             this.sendCallbackMessageToLobby(this.getGameState);
             logger.info("Game.js: Fold");
             return;
         }
 
+        this.updateCurrentPlayer();
         player.bet = bet;
         
-        // Prüfen, was von updateCurrentPlayer zurückkam
-        if (updateResult) {
-            // Fall 2: Das Spiel ist komplett zu Ende
-            if (updateResult === "gameEnd") { // gameEnd() gibt einen String zurück
-                logger.info("Game.js: Spiel ende identifiziert. aufruf game.js gameEnd()");
-                // beenden des Spiels und updaten der Lobby
-                this.gameEnd();
-                this.sendMessageToLobby(
-                JSON.stringify({
-                    "type": "gameEnd",
-                    "currentPlayer": this.getCurrentPlayer(),
-                    "currentBet": this.getCurrentBet(),
-                    "currentPot": this.getCurrentPot(),
-                    "currentRound": this.getRoundName(this.currentRound)
-                }));
-            //Fall 3: Gültiger Einsatz, Spiel geht weiter.
-            }else{
-                logger.info("Game.js: Spiel ende nicht identifiziert. Aktualisieren der Lobby ");
-                this.sendMessageToLobby(
-                    JSON.stringify({ // type ist ein empty String, da die untenstehenden Variablen jedesmal aktualisiert werden.
-                        "type": "",
-                        "currentPlayer": this.getCurrentPlayer(),
-                        "currentBet": this.getCurrentBet(),
-                        "currentPot": this.getCurrentPot(),
-                        "currentRound": this.getRoundName(this.currentRound),
-                }));
-            }
-        }
 
-        // Fall 3: Standardfall (Runde läuft weiter). Returnen von GameDisplay update.
+        logger.info("Game.js: Spiel ende nicht identifiziert. Aktualisieren der Lobby ");
+        this.sendMessageToLobby(
+            JSON.stringify({ // type ist ein empty String, da die untenstehenden Variablen jedesmal aktualisiert werden.
+                "type": "",
+                "currentPlayer": this.getCurrentPlayer(),
+                "currentBet": this.getCurrentBet(),
+                "currentPot": this.getCurrentPot(),
+                "currentRound": this.getRoundName(this.currentRound),
+        }));
+  
+
 
     }
 
@@ -316,8 +297,10 @@ class Game {
     updateCurrentPlayer() {
         if(this.players.filter(p => p.active).length < 2) {
             this.currentRound = 3;
-            this.sendCallbackMessageToLobby(this.getGameState, true);
-            return "gameEnd"; // Return message from gameEnd
+            this.sendCallbackMessageToLobby(this.getGameState, [true]);
+            logger.info("Game.js: Spiel ende identifiziert. aufruf game.js gameEnd()");
+            this.gameEnd();
+            return;
             //EDIT: Falls nur noch einer (oder weniger) Spieler mitspielen, soll das Spiel beendet werden
         }
         do {
@@ -347,9 +330,10 @@ class Game {
         //Return message from gameEnd
         if (this.currentRound === 3) {
             this.sendCallbackMessageToLobby(this.getGameState);
-            return "gameEnd"; // Return message from gameEnd
+            logger.info("Game.js: Spiel ende identifiziert. aufruf game.js gameEnd()");
+            this.gameEnd();
+            return;
         }
-        return true;
     }
 
 
@@ -362,7 +346,7 @@ class Game {
         let highScoringPlayers = [];
         let winner = null;
 
-        this.players.forEach(player => {
+        this.players.filter(p => p.active).forEach(player => {
             const score = this.evaluateHand(player.cards);
 
             if (score > highScore) {
