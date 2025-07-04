@@ -164,8 +164,8 @@ class Game {
         logger.info("game.js: Initialised Game variabels and setting player variabels");
         this.players = this.players.filter(p => !p.leaveGame);
         this.players.forEach((player) => {
-            if(player.leaveGame) {
-                //EDIT: Spieler entfernen
+            if(player.balance < 5) {
+                return;
             }
             player.active = true;
             player.balance -= player.bet;
@@ -218,6 +218,28 @@ class Game {
         return JSON.stringify({type: "drawCards", cards: player.cards});
     }
 
+
+
+    betIsValid(playerId, bet, fold = false, playerIndex) {
+        let player = this.players[playerIndex];
+        if(!Game.betRounds.includes(this.currentRound) || this.currentPlayer != playerIndex || !player.active) {
+            logger.info("Fehler: Spieler ist nicht am Zug");
+            return false;
+        }
+        if(fold) {
+            logger.info("Spieler hat gepasst")
+            return true;
+        }
+        //Spieler hat nicht genug Geld -> Es muss alles gesetzt werden, was er noch hat
+        if(this.getCurrentBet() > player.balance) {
+            logger.info("Spieler hat nicht genug Chips: betIsValid() -> " + (bet == player.balance))
+            return bet == player.balance; 
+        }
+        logger.info("Es liegt kein Spezialfall vor: betIsValid() -> " + (bet <= player.balance && bet >= this.getCurrentBet()))
+        return bet <= player.balance && bet >= this.getCurrentBet();
+    }
+
+
     /**
      * Processes a player's bet.
      * @param {string} playerId - The ID of the player.
@@ -231,12 +253,7 @@ class Game {
 
         //Validiere Input
         //EDIT: falls Spieler weniger balance hat, als nötig, ist ihm erlaubt alles zu setzen
-        if (!fold &&
-            (!player.active ||
-            this.currentPlayer != index ||
-            bet > player.balance ||
-            !Game.betRounds.includes(this.currentRound) ||
-            this.getCurrentBet() > bet)) {
+        if (!this.betIsValid(playerId, bet, fold, index)) {
             logger.error(`game.js: Unzulässiger Einsatz: fold: ${fold}, active: ${player.active}, 
                 betDiff: ${bet-player.bet}, currentPlayer: ${this.currentPlayer != index}, balance: ${player.balance}
                 , currentRound: ${this.currentRound}, currentBet: ${this.getCurrentBet}`);
@@ -245,8 +262,8 @@ class Game {
 
 
 
-        player.bet = bet;
-        logger.info("game.js: Bet of player: " + player.name + " set to: " + player.bet);
+        
+
         const updateResult = this.updateCurrentPlayer();
 
         //Fall 1: Spieler hat gefoldet und ist daher nicht mehr aktiv
@@ -257,6 +274,8 @@ class Game {
             return;
         }
 
+        player.bet = bet;
+        
         // Prüfen, was von updateCurrentPlayer zurückkam
         if (updateResult) {
             // Fall 2: Das Spiel ist komplett zu Ende

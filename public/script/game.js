@@ -30,6 +30,7 @@ const endGame = document.getElementById('leaderboard');
           betSlider.min = data.currentBet;
         }
         betSlider.value = betSlider.min;
+        betValue.textContent = betSlider.min;
     }
     if (data.currentPot !== undefined) {
         document.getElementById("currentPot").textContent = "Pot: " + data.currentPot;
@@ -69,7 +70,10 @@ const endGame = document.getElementById('leaderboard');
         let container_players = document.getElementById(`players`);
         let container_self = document.getElementById(`self`);
         // Setting the max bet value to the balance of the current player.
-        document.getElementById("bet").max = data.players[data.self].balance;
+        if(data.self) {
+          document.getElementById("bet").max = data.players[data.self].balance;
+        }
+        
 
         container_players.innerHTML = '';
         container_self.innerHTML = '';
