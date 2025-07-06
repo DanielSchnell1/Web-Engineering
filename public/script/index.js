@@ -11,3 +11,10 @@
             lobby: lobby
         }));
     });
+
+    ws.addEventListener('message', (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'lobbyFull') {
+            alert('Die Lobby ist voll. Sie können nicht beitreten.');
+        }
+    });

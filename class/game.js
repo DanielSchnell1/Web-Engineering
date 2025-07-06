@@ -71,14 +71,19 @@ class Game {
      * @param {number} [bet=0] - The player's current bet.
      */
     addPlayer(jwt, name, cards = [], balance = 100, active = false, bet = 0) {
-        this.players.push({"jwt": jwt, 
-            "name": name, 
-            "cards": cards, 
-            "balance": balance, 
-            "active": active, 
-            "bet": bet, 
+        if (this.players.length >= 5) {
+            logger.info("Game.js: Player could not be added. Game is full.");
+            return false;
+        }
+        this.players.push({"jwt": jwt,
+            "name": name,
+            "cards": cards,
+            "balance": balance,
+            "active": active,
+            "bet": bet,
             "leaveGame": false});
         logger.info(("Game.js: Player added: " + name));
+        return true;
     }
 
     /**
@@ -130,7 +135,6 @@ class Game {
             logger.info("Game.js: " + callback.name + `(${user.jwt}, ${this}, ${args.join(", ")}) wurde aufgerufen`);
         });
     }
-
 
 
 
@@ -333,7 +337,6 @@ class Game {
             this.sendCallbackMessageToLobby(this.getGameState);
             logger.info("Game.js: Spiel ende identifiziert. aufruf game.js gameEnd()");
             this.gameEnd();
-            return;
         }
     }
 
