@@ -315,54 +315,74 @@ img {
 }
 
 #leaderboard {
+  background-color: #3a3a3a;
   color: white;
   border: none;
-  border-radius: 8px;
-  padding: 20px;
-  background-color: #3a3a3a;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 25px 30px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
   font-family: 'League Spartan', sans-serif;
-  text-align: center;
-  max-width: 600px;
   width: 90%;
+  max-width: 700px;
+  text-align: left;
+
 }
 
 #leaderboard ul {
   list-style: none;
   padding: 0;
-  margin: 0 0 20px 0;
+  margin: 0;
 }
 
-#leaderboard li {
-  padding: 10px;
-  margin: 5px 0;
-  background-color: #4a4a4a;
-  border-radius: 5px;
-  font-size: 1.2em;
-  color: #dcdcdc;
-}
-
-.dialog-buttons {
+#leaderboard li.leaderboardEntry {
   display: flex;
-  justify-content: center;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   gap: 15px;
-  margin-top: 20px;
+  flex-wrap: wrap;
 }
 
-.dialog-buttons button {
-  background-color: #4a8c3f;
-  color: whitesmoke;
-  border: none;
+.playerName {
+  width: 100px;
+  font-weight: bold;
+  color: #e0e0e0;
+}
+
+.playerCards {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 5px;
+}
+
+.playerCards img {
+  width: 40px;
+  height: auto;
+  margin: 0;
+}
+
+.playerBalance {
+  margin-left: auto;
+  white-space: nowrap;
+  font-weight: normal;
+  color: #cccccc;
+}
+
+#leaderboardButtons button {
+  border-radius: 12px;
   padding: 10px 20px;
-  border-radius: 20px;
+  background-color: #3b6c2f;
+  color: white;
+  border: none;
   font-size: 1em;
   font-family: 'League Spartan', sans-serif;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  height: 40px;
+  transition: background-color 0.2s ease;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
-}
-
-.dialog-buttons button:hover {
-  background-color: #3b6c2f;
+  height: 40px; 
 }

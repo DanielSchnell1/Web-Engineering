@@ -99,12 +99,13 @@ const drawCards = [];
           data.players.forEach((player) => {
             if(!player.user) return;
             leaderboard_list.innerHTML += `
-              <li>  
-                <div>${player.user}</div>
+              <li class="leaderboardEntry">
+                <span class="playerName">${player.user}</span>
+                <div class="playerCards">
+                ${player.cards.map(card => `<img src="/img/cards/${card}.svg" alt="${card}" />`).join('')}
                 <div>
-                  ${player.cards.map(card => `<img src="/img/cards/${card}.svg" alt="${card}" />`).join('')}
-                </div>
-                <div>${player.balance}</div>
+                <span class="playerBalance">${player.balance} Chips</span>
+
               </li>`;
           });
 
