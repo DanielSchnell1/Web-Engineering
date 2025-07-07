@@ -318,7 +318,7 @@ class Game {
         if (
             this.players
                 .filter(p => p.active)
-                .every(p => p.bet === this.players.find(p2 => p2.active).bet) &&
+                .every(p => p.bet == this.players.find(p2 => p2.active).bet) &&
             (!this.betNoRepeat || this.currentPlayer === 0)
         ) {
             this.currentRound = this.currentRound + 1;
