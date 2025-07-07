@@ -1,11 +1,7 @@
-//EDIT: passen als Option hinzufügen!!! -> players.active: Boolean zum überprüfen, ob ein Spieler aktiv ist
 //EDIT: optional: Validierung, ob eigene Karten getauscht werden (kein Sicherheitsrisiko, aber Anzeigefehler)
-//EDIT: Zweiten Spielstapel anlegen um getauschte Karten zu speichern. die getauschten Karten wieder mischeln und als neues `deck` verwenden, falls `deck` leer ist
-//EDIT: Frontend anpassen: Es müssen 'players.balance', angezeigt werden und betSlider braucht einen minimal Wert: getCurrentBet() und einen maximal Wert: player.balance.
 
 
 const logger = require('../logger/logger');
-const {log} = require("winston");
 
 
 class Game {
@@ -254,7 +250,6 @@ class Game {
         let player = this.players[index];
 
         //Validiere Input
-        //EDIT: falls Spieler weniger balance hat, als nötig, ist ihm erlaubt alles zu setzen
         if (!this.betIsValid(playerId, bet, fold, index)) {
             logger.error(`game.js: Unzulässiger Einsatz: fold: ${fold}, active: ${player.active}, 
                 betDiff: ${bet-player.bet}, currentPlayer: ${this.currentPlayer != index}, balance: ${player.balance}
@@ -306,7 +301,6 @@ class Game {
             logger.info("Game.js: Spiel ende identifiziert. aufruf game.js gameEnd()");
             this.gameEnd();
             return;
-            //EDIT: Falls nur noch einer (oder weniger) Spieler mitspielen, soll das Spiel beendet werden
         }
         do {
             this.currentPlayer = (this.currentPlayer + 1) % this.players.length;
