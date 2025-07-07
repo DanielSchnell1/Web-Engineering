@@ -1,6 +1,5 @@
 //const logger = require('C:/DHBW/Semester2/Web_Engineering/Web-Engineering/logger/logger.js');
 const drawCards = [];
-const endGame = document.getElementById('leaderboard');
 
     // Einsatzanzeige
     const betSlider = document.getElementById('bet');
@@ -72,6 +71,26 @@ const endGame = document.getElementById('leaderboard');
         // Setting the max bet value to the balance of the current player.
         if(data.self) {
           document.getElementById("bet").max = data.players[data.self].balance;
+        }
+        if (data.currentRound === 'Showdown') {
+          const leaderboard = document.getElementById('leaderboard');
+          const leaderboard_list = leaderboard.querySelector("ul");
+          leaderboard_list.innerHTML = '';
+          console.log(data);
+          data.players.forEach((player) => {
+            if(!player.user) {
+              return;
+            }
+            leaderboard_list.innerHTML += `
+            <li>  
+              <div>${player.user}</div>
+              <div>
+                ${player.cards.map(card => `<img src="/img/cards/${card}.svg" alt="${card}" />`).join('')}
+              </div>
+              <div>${player.balance}</div>
+            </li>`;
+          });
+          leaderboard.showModal();
         }
         
 
@@ -147,11 +166,6 @@ const endGame = document.getElementById('leaderboard');
               el.style.top = y + "%";
               
             });
-      }
-
-      if(data.type === 'endGame') {
-        endGame.showModal();
-
       }
     });
 
