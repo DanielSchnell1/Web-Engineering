@@ -385,6 +385,15 @@ class Game {
 
 
 
+
+        /**
+         * Gets the current Id of the host.
+         * @returns {String} The host Id.
+         */
+        getHostId()
+        {
+            return this.players.find(player => player.leaveGame === false).jwt;
+        }
         /**
          * Gets the current total pot.
          * @returns {number} The current pot.
@@ -429,6 +438,7 @@ class Game {
                 "currentPot": self.getCurrentPot(),
                 "currentRound": self.getRoundName(self.currentRound),
                 "self": null,
+                "host": jwt === self.getHostId()
             };
             self.players.forEach((player, index) => {
                 if (!player.active) {

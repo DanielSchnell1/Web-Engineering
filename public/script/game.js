@@ -66,6 +66,7 @@ const drawCards = [];
        * This includes displaying all players, their cards, balances, and setting up the bet slider.
        */
       if(data.type === "getGameState"){
+        console.log(data.host);
         let container_players = document.getElementById(`players`);
         let container_self = document.getElementById(`self`);
         // Setting the max bet value to the balance of the current player.
@@ -77,21 +78,30 @@ const drawCards = [];
           const leaderboard_list = leaderboard.querySelector("ul");
           leaderboard_list.innerHTML = '';
           console.log(data);
+
           data.players.forEach((player) => {
-            if(!player.user) {
-              return;
-            }
+            if(!player.user) return;
             leaderboard_list.innerHTML += `
-            <li>  
-              <div>${player.user}</div>
-              <div>
-                ${player.cards.map(card => `<img src="/img/cards/${card}.svg" alt="${card}" />`).join('')}
-              </div>
-              <div>${player.balance}</div>
-            </li>`;
+              <li>  
+                <div>${player.user}</div>
+                <div>
+                  ${player.cards.map(card => `<img src="/img/cards/${card}.svg" alt="${card}" />`).join('')}
+                </div>
+                <div>${player.balance}</div>
+              </li>`;
           });
+
+          if(data.host){
+            if (!leaderboard.querySelector('button#startGameBtn')) {
+              console.log("Spiel starten Button hinzugefügt");
+              leaderboard.insertAdjacentHTML('beforeend', '<button id="startGameBtn" onclick="ws.send(JSON.stringify({\'type\': \'startGame\'}))">Spiel starten</button>');
+            }
+          }
+
           leaderboard.showModal();
+          return;
         }
+
         
 
         container_players.innerHTML = '';
@@ -232,6 +242,17 @@ betButton.addEventListener("click", () => {
     fold: false,
   }));
 });
+
+/**
+ * Sends a "leave" action to the server.
+ */
+document.getElementById('leaveBtn').addEventListener('click', () => {
+  ws.send(JSON.stringify({
+    type: 'leave',
+    token: sessionStorage.getItem('jwt')
+  }));
+});
+
 
 
 /**

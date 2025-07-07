@@ -58,6 +58,10 @@ wss.on('connection', (ws) => {
                 //logger.log("Server.js: Nutzer beigetreten, called data.type === getToken" + id.toString());
                 console.log("Nutzer beigetreten: " + id);
 
+            } else if(data.type === 'leave') {
+                deleteUserFromGame(data.token);
+                ws.send(JSON.stringify({type: 'replace', path: `/`}));
+
             } else if (data.type === 'startGame') {
                 let lobby = getLobby(data.token);
                 if (!lobby) {
@@ -218,7 +222,7 @@ function deleteUserFromGame(userId) {
  */
 function getLobby(token) {
     for (const [lobbyCode, game] of games.entries()) {
-        if (game.players.some(player => player.jwt === token)) {
+        if (game.players.some(player => player.jwt === token && player.leaveGame == false)) {
             return lobbyCode;
         }
     }
