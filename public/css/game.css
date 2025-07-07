@@ -270,3 +270,97 @@ img {
 }
 
 
+#endGameDialog {
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #3a3a3a;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  font-family: 'League Spartan', sans-serif;
+  text-align: center;
+  max-width: 400px;
+  width: 80%;
+}
+
+#endGameDialog h2 {
+  font-size: 1.8em;
+  color: whitesmoke;
+  margin-bottom: 10px;
+}
+
+#endGameDialog p {
+  font-size: 1.2em;
+  margin-bottom: 20px;
+  color: #dcdcdc;
+}
+
+#closeEndDialog {
+  color: whitesmoke;
+  margin-top: 10px;
+  background-color: #4a8c3f;
+  border-radius: 5px;
+  border-width: 0px;
+  height: 30px;
+  padding: 0 15px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.2s ease;
+}
+
+#closeEndDialog:hover {
+  background-color: #3b6c2f;
+}
+
+#leaderboard {
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #3a3a3a;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  font-family: 'League Spartan', sans-serif;
+  text-align: center;
+  max-width: 600px;
+  width: 90%;
+}
+
+#leaderboard ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+}
+
+#leaderboard li {
+  padding: 10px;
+  margin: 5px 0;
+  background-color: #4a4a4a;
+  border-radius: 5px;
+  font-size: 1.2em;
+  color: #dcdcdc;
+}
+
+.dialog-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.dialog-buttons button {
+  background-color: #4a8c3f;
+  color: whitesmoke;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 1em;
+  font-family: 'League Spartan', sans-serif;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  height: 40px;
+  line-height: 1;
+}
+
+.dialog-buttons button:hover {
+  background-color: #3b6c2f;
+}
