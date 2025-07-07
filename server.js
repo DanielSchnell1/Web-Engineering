@@ -94,7 +94,6 @@ wss.on('connection', (ws) => {
                             type: 'lobby',
                             users: games.get(data.lobby).getPlayerNames(Game.users)
                         }));
-                        logger.info("Server.js: ")
                         console.log(games.get(data.lobby).getPlayerNames(Game.users));
 
                     } else if (!data.lobby) {    //Fall 2: Nutzer schickt kein Lobbycode

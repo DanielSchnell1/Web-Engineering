@@ -227,10 +227,12 @@ img {
     .community-cards {
         flex-wrap: wrap;
         gap: 6px;
+        display: none;
     }
 
     .community-cards img {
-        width: 45px;
+        width: 40px;
+        display: none;
     }
 
     .infobar {
@@ -240,7 +242,7 @@ img {
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 550px) {
     .table {
         height: 70vw;
         border-width: 6px;
@@ -252,7 +254,7 @@ img {
 
     .cards img,
     .community-cards img {
-        width: 40px;
+        display: none;
     }
 
     button,
