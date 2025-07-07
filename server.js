@@ -78,6 +78,7 @@ wss.on('connection', (ws) => {
                 
 
             } else if (data.type === 'init') { // Erstelle Lobby oder trete bestehender bei
+                deleteUserFromGame(data.token);
                 if (data.name && Game.users.has(data.token)) {
                     user = Game.users.get(data.token);
                     user.name = data.name;
