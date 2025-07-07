@@ -27,7 +27,7 @@ const drawCards = [];
         if(data.currentBet > betSlider.max){
           betSlider.min = betSlider.max;
         } else {
-          betSlider.min = data.currentBet;
+          betSlider.min = Math.min(data.balance, data.currentBet);
         }
         betSlider.value = betSlider.min;
         betValue.textContent = betSlider.min;
@@ -87,10 +87,9 @@ const drawCards = [];
       if(data.type === "getGameState"){
         let container_players = document.getElementById(`players`);
         let container_self = document.getElementById(`self`);
-        // Setting the max bet value to the balance of the current player.
-        if(data.self) {
-          document.getElementById("bet").max = data.players[data.self].balance;
-        }
+        // Setting the max bet value of a player to the balance of the player.
+        document.getElementById("bet").max = data.balance;
+
         if (data.currentRound === 'Showdown') {
           const leaderboard = document.getElementById('leaderboard');
           const leaderboard_list = leaderboard.querySelector("ul");

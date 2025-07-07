@@ -273,19 +273,21 @@ class Game {
             return;
         }
 
-        this.updateCurrentPlayer();
         player.bet = bet;
+        this.updateCurrentPlayer();
+        
         
 
         logger.info("Game.js: Spiel ende nicht identifiziert. Aktualisieren der Lobby ");
-        this.sendMessageToLobby(
-            JSON.stringify({ // type ist ein empty String, da die untenstehenden Variablen jedesmal aktualisiert werden.
+        this.sendCallbackMessageToLobby((userId) =>
+            { return JSON.stringify({ // type ist ein empty String, da die untenstehenden Variablen jedesmal aktualisiert werden.
                 "type": "",
                 "currentPlayer": this.getCurrentPlayer(),
                 "currentBet": this.getCurrentBet(),
                 "currentPot": this.getCurrentPot(),
                 "currentRound": this.getRoundName(this.currentRound),
-        }));
+                "balance": this.players.find(player => player.jwt === userId).balance,
+        })});
         this.sendCallbackMessageToLobby(this.getMoveStateJSON, [this]);
   
 
@@ -318,7 +320,9 @@ class Game {
         if (
             this.players
                 .filter(p => p.active)
-                .every(p => p.bet == this.players.find(p2 => p2.active).bet) &&
+                .every(p => p.bet == this.getCurrentBet() ||
+                    (p.bet < this.getCurrentBet() && 
+                    p.bet == p.balance)) &&
             (!this.betNoRepeat || this.currentPlayer === 0)
         ) {
             this.currentRound = this.currentRound + 1;
@@ -450,7 +454,8 @@ class Game {
                 "currentRound": self.getRoundName(self.currentRound),
                 "self": null,
                 "host": jwt === self.getHostId(),
-                "moveState": self.getMoveState(jwt, self)
+                "moveState": self.getMoveState(jwt, self),
+                "balance": self.players.find(p => p.jwt === jwt).balance,
             };
             self.players.forEach((player, index) => {
                 if (!player.active) {
