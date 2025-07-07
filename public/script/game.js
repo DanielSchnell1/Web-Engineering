@@ -94,7 +94,11 @@ const drawCards = [];
           if(data.host){
             if (!leaderboard.querySelector('button#startGameBtn')) {
               console.log("Spiel starten Button hinzugefügt");
-              leaderboard.insertAdjacentHTML('beforeend', '<button id="startGameBtn" onclick="ws.send(JSON.stringify({\'type\': \'startGame\'}))">Spiel starten</button>');
+              leaderboard.insertAdjacentHTML('beforeend', `
+                <button id="startGameBtn" 
+                        onclick="ws.send(JSON.stringify({ type: 'startGame', token: '${sessionStorage.getItem('jwt')}' }))">
+                          Spiel starten
+                </button>`);
             }
           }
 

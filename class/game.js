@@ -377,10 +377,6 @@ class Game {
         }
         logger.info("game.js: Winner: " + winner.name + "Pot:" + this.getCurrentPot());
         winner.balance += this.getCurrentPot();
-        setTimeout(() => {
-            logger.info("game.js: Starting new Game");
-            this.start();
-        }, 3000);
     }
 
 

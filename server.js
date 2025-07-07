@@ -70,14 +70,14 @@ wss.on('connection', (ws) => {
                 }
                 //Nur spieler 0 ist berechtigt das Spiel zu starten
                 game = games.get(lobby);
-                if (!(game.players[0].jwt === data.token)) {
+                if (!(game.getHostId() === data.token)) {
                     ws.send(JSON.stringify({type: 'error', message: 'Fehler: Keine Berechtigung'}))
                     return;
                 }
                 game.start();
                 logger.info('Server.js:  called Spiel gestartet. data.type === startGame' + game);
                 game.sendMessageToLobby(JSON.stringify({type: 'replace', path: `/game/${lobby}`}));
-
+                
 
             } else if (data.type === 'init') { // Erstelle Lobby oder trete bestehender bei
                 if (data.name && Game.users.has(data.token)) {
