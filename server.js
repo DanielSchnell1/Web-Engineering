@@ -68,7 +68,6 @@ wss.on('connection', (ws) => {
                     ws.send(JSON.stringify({type: 'error', message: 'Fehler: Lobby existiert nicht'}))
                     return;
                 }
-                //Nur spieler 0 ist berechtigt das Spiel zu starten
                 game = games.get(lobby);
                 if (!(game.getHostId() === data.token)) {
                     ws.send(JSON.stringify({type: 'error', message: 'Fehler: Keine Berechtigung'}))

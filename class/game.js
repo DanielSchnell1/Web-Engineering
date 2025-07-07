@@ -166,6 +166,7 @@ class Game {
         this.players.forEach((player) => {
             player.balance -= player.bet;
             if(player.balance < 5) {
+                player.active = false;
                 return;
             }
             player.active = true;
