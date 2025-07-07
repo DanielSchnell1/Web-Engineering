@@ -9,6 +9,7 @@ const Game = require('./class/game');
 const express = require('express');
 const {v4: uuidv4} = require('uuid');
 const logger = require('./logger/logger');
+require('dotenv').config();
 
 /**
  * @file server.js
@@ -244,7 +245,8 @@ function generateLobbyCode() {
 
 
 // Server starten
-const PORT = 1234;
+
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server läuft auf http://localhost:${PORT}`);
 });
