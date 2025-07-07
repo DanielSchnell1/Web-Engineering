@@ -21,14 +21,18 @@
     <div id="players"></div>
     <div id="self"></div>
     <div id="community" class="community-cards"></div>
-  </div>  <div class="controls">
-    <label for="bet">Einsatz:</label>
-    <input type="range" id="bet" name="bet" min="5" max="100" step="1">
-    <span id="betValue">-</span> Chips
+  </div>  <div id="controls">
+    <div>
+      <label class = "bet" for="bet">Einsatz:&nbsp;</label>
+      <span class = "bet" id="betValue">-</span> <span class="bet">&nbsp;Chips&nbsp;</span>
+    </div>
+    <input class = "bet" type="range" id="bet" name="bet" min="5" max="100" step="1">
     <br><br>
-    <button id="betButton">Setzen</button>
-    <button id="drawButton">Karten tauschen</button>
-    <button id="foldButton">Passen</button>  
+    <div>
+      <button class = "bet" id="betButton">Setzen</button>
+      <button id="drawButton">Karten tauschen</button>
+      <button class = "bet" id="foldButton">Passen</button>  
+    </div>
   </div>  
   <dialog id="pokerhands">
   </dialog>

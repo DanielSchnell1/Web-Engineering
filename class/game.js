@@ -25,7 +25,7 @@ class Game {
      * @type {number[]}
      * @static
      */
-    static rounds = [0, 1, 0, 2]
+    static rounds = [1, 2, 1, 3]
 
     /**
      * Creates a sorted deck of cards.
@@ -215,6 +215,7 @@ class Game {
         //Nächster Spieler
         this.updateCurrentPlayer();
         logger.info("game.js: switched card of player: " + player.name);
+        this.sendCallbackMessageToLobby(this.getMoveStateJSON, [this]);
         return JSON.stringify({type: "drawCards", cards: player.cards});
     }
 
@@ -285,6 +286,7 @@ class Game {
                 "currentPot": this.getCurrentPot(),
                 "currentRound": this.getRoundName(this.currentRound),
         }));
+        this.sendCallbackMessageToLobby(this.getMoveStateJSON, [this]);
   
 
 
@@ -381,6 +383,19 @@ class Game {
 
 
 
+        getMoveStateJSON(userId, self=this) {
+            return JSON.stringify({
+                type: "moveState",
+                moveState: self.getMoveState(userId, self)
+            });
+        }
+
+        getMoveState(userId, self=this){
+            if(self.players.findIndex(p => p.jwt === userId) == self.currentPlayer){
+                return Game.rounds[self.currentRound];
+            }
+            return 0;
+        }
 
         /**
          * Gets the current Id of the host.
@@ -434,7 +449,8 @@ class Game {
                 "currentPot": self.getCurrentPot(),
                 "currentRound": self.getRoundName(self.currentRound),
                 "self": null,
-                "host": jwt === self.getHostId()
+                "host": jwt === self.getHostId(),
+                "moveState": self.getMoveState(jwt, self)
             };
             self.players.forEach((player, index) => {
                 if (!player.active) {

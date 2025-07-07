@@ -15,6 +15,7 @@ const drawCards = [];
      */
     ws.addEventListener('message', (event) => {
       let data = JSON.parse(event.data);
+      console.log(data);
 
       
     if (data.currentPlayer !== undefined) {
@@ -37,6 +38,24 @@ const drawCards = [];
     if (data.currentRound !== undefined) {
         document.getElementById("currentRound").textContent = data.currentRound;
     }
+    if (data.moveState !== undefined)
+    {
+      const betElements = document.querySelectorAll('.bet');
+
+      if ([0, 2, 3].includes(data.moveState)) {
+        betElements.forEach(el => el.style.display = 'none');
+      } else {
+        betElements.forEach(el => el.style.display = 'flex');
+      }
+
+      if (data.moveState === 0 || data.moveState === 1 || data.moveState === 3) {
+        drawButton.style.display = 'none';
+      } else {
+        drawButton.style.display = 'flex';
+      }
+
+    }
+    
 
 
 
@@ -66,7 +85,6 @@ const drawCards = [];
        * This includes displaying all players, their cards, balances, and setting up the bet slider.
        */
       if(data.type === "getGameState"){
-        console.log(data.host);
         let container_players = document.getElementById(`players`);
         let container_self = document.getElementById(`self`);
         // Setting the max bet value to the balance of the current player.
