@@ -85,14 +85,16 @@ wss.on('connection', (ws) => {
                     if (games.has(data.lobby)) { //Fall 1: Nutzer schickt validen Lobbycode
                         let game = games.get(data.lobby);
                         Game.users.set(data.token, user);
-                        game.addPlayer(data.token, user.name);
+                        if (!game.addPlayer(data.token, user.name)) {
+                            ws.send(JSON.stringify({type: 'lobbyFull'}));
+                            return;
+                        }
                         ws.send(JSON.stringify({type: 'redirect', path: `lobby/${data.lobby}`}));
                         //update an die Lobby mit neuem Spieler
                         game.sendMessageToLobby(JSON.stringify({
                             type: 'lobby',
                             users: games.get(data.lobby).getPlayerNames(Game.users)
                         }));
-                        logger.info("Server.js: ")
                         console.log(games.get(data.lobby).getPlayerNames(Game.users));
 
                     } else if (!data.lobby) {    //Fall 2: Nutzer schickt kein Lobbycode
