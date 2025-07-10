@@ -122,7 +122,10 @@ wss.on('connection', (ws) => {
 
             } else if (data.type === 'getLobbyState') {
                 lobby = getLobby(data.id);
-                ws.send(JSON.stringify({type: 'lobby', users: games.get(lobby).getPlayerNames(Game.users), code: lobby}));
+                game = games.get(lobby);
+                ws.send(JSON.stringify({type: 'lobby', 
+                    host: game.getHostId() == data.id, 
+                    users: game.getPlayerNames(Game.users), code: lobby}));
 
 
             } else if (data.type === 'draw') {

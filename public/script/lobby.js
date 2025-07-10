@@ -5,7 +5,9 @@ ws.addEventListener("message", (event) => {
     const data = JSON.parse(event.data);
     if (data.type === "lobby" && Array.isArray(data.users)) {
       const userListElement = document.getElementById("userList");
-      
+      if(data.host) {
+        document.getElementById("start").style.display = 'flex';
+      }
       userListElement.innerHTML = "";
 
       data.users.forEach((username) => {
