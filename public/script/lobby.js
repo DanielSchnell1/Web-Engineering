@@ -17,10 +17,10 @@ ws.addEventListener("message", (event) => {
     }
 });
 ws.addEventListener('open', () => {
-  ws.send(JSON.stringify({ type: 'getLobbyState', token: token }));
+  ws.send(JSON.stringify({ type: 'getLobbyState', id: id }));
 });
 start = document.getElementById("start");
 
 start.addEventListener('click', () => {
-  ws.send(JSON.stringify({ type: 'startGame', token: token }));
+  ws.send(JSON.stringify({ type: 'startGame', id: id }));
 });

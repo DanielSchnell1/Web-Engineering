@@ -1,24 +1,24 @@
 let ws = new WebSocket(`ws://${location.host}`);
-let token = sessionStorage.getItem('jwt');
+let id = sessionStorage.getItem('id');
 let lobby = sessionStorage.getItem('lobby');
 
 ws.onopen = () => {
-    if(!token)
+    if(!id)
     {
         ws.send(JSON.stringify({
-            type: 'getToken'
+            type: 'getId'
         }));
     } else {
         ws.send(JSON.stringify({
             type: 'ws',
-            token: token
+            id: id
         }));
     }
 };
 ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
-    if (data.type === 'token') {
-        sessionStorage.setItem('jwt', data.token);
+    if (data.type === 'id') {
+        sessionStorage.setItem('id', data.id);
     }
     else if (data.type === 'error') {
         alert(data.message);

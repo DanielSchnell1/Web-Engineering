@@ -6,7 +6,7 @@
         }
         ws.send(JSON.stringify({
             type: 'init',
-            token: sessionStorage.getItem('jwt') || null,
+            id: sessionStorage.getItem('id') || null,
             name: name,
             lobby: lobby
         }));

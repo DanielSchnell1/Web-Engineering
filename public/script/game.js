@@ -114,7 +114,7 @@ const drawCards = [];
               console.log("Spiel starten Button hinzugefügt");
               leaderboard.insertAdjacentHTML('beforeend', `
                 <button id="startGameBtn" 
-                        onclick="ws.send(JSON.stringify({ type: 'startGame', token: '${sessionStorage.getItem('jwt')}' }))">
+                        onclick="ws.send(JSON.stringify({ type: 'startGame', id: '${sessionStorage.getItem('id')}' }))">
                           Spiel starten
                 </button>`);
             }
@@ -233,7 +233,7 @@ foldButton.addEventListener("click", () => {
   ws.send(JSON.stringify({
     type: 'bet',
     lobby: lobby,
-    token: sessionStorage.getItem('jwt') || null,
+    id: sessionStorage.getItem('id') || null,
     bet: null,
     fold: true,
   }));
@@ -247,7 +247,7 @@ drawButton.addEventListener("click", () => {
   ws.send(JSON.stringify({
     type: 'draw',
     lobby: lobby,
-    token: sessionStorage.getItem('jwt') || null,
+    id: sessionStorage.getItem('id') || null,
     cards: drawCards
   }));
 });
@@ -259,7 +259,7 @@ betButton.addEventListener("click", () => {
   ws.send(JSON.stringify({
     type: 'bet',
     lobby: lobby,
-    token: sessionStorage.getItem('jwt') || null,
+    id: sessionStorage.getItem('id') || null,
     bet: document.getElementById("bet").value,
     fold: false,
   }));
@@ -271,7 +271,7 @@ betButton.addEventListener("click", () => {
 document.getElementById('leaveBtn').addEventListener('click', () => {
   ws.send(JSON.stringify({
     type: 'leave',
-    token: sessionStorage.getItem('jwt')
+    id: sessionStorage.getItem('id')
   }));
 });
 
@@ -281,6 +281,6 @@ document.getElementById('leaveBtn').addEventListener('click', () => {
  * Requests the initial game state from the server as soon as the WebSocket connection is established.
  */
 ws.addEventListener('open', () => {
-  ws.send(JSON.stringify({ type: 'getGameState', token: token, lobby: lobby}));
+  ws.send(JSON.stringify({ type: 'getGameState', id: id, lobby: lobby}));
 });
 

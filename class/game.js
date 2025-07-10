@@ -46,14 +46,14 @@ class Game {
 
     /**
      * Creates a new game instance.
-     * @param {string} jwt - The JSON Web Token of the player creating the game.
+     * @param {string} id - The Id of the player creating the game.
      * @param {string} name - The name of the player creating the game.
      * @param {function} onGameEndCallback - A callback function to be executed when the game ends.
      */
-    constructor(jwt, name) {
+    constructor(id, name) {
         this.isStarted = false;
         this.players = [];
-        this.addPlayer(jwt, name);
+        this.addPlayer(id, name);
         this.deck = null;
         this.currentPlayer = 0;
         this.currentRound = 0;
@@ -63,19 +63,19 @@ class Game {
 
     /**
      * Adds a player to the game.
-     * @param {string} jwt - The JSON Web Token of the player.
+     * @param {string} id - The Id of the player.
      * @param {string} name - The name of the player.
      * @param {string[]} [cards=[]] - The player's cards.
      * @param {number} [balance=100] - The player's starting balance.
      * @param {boolean} [active=true] - Whether the player is active in the game.
      * @param {number} [bet=0] - The player's current bet.
      */
-    addPlayer(jwt, name, cards = [], balance = 100, active = false, bet = 0) {
+    addPlayer(id, name, cards = [], balance = 100, active = false, bet = 0) {
         if (this.players.length >= 5) {
             logger.info("Game.js: Player could not be added. Game is full.");
             return false;
         }
-        this.players.push({"jwt": jwt,
+        this.players.push({"id": id,
             "name": name,
             "cards": cards,
             "balance": balance,
@@ -116,7 +116,7 @@ class Game {
      */
     sendMessageToLobby(JSON) {
         this.players.forEach(user => {
-            Game.users.get(user.jwt).ws.send(JSON);
+            Game.users.get(user.id).ws.send(JSON);
         });
     }
 
@@ -130,9 +130,9 @@ class Game {
             if(user.leaveGame === true){
                 return;
             }
-            let message = callback(user.jwt, this, ...args);
-            Game.users.get(user.jwt).ws.send(message);
-            logger.info("Game.js: " + callback.name + `(${user.jwt}, ${this}, ${args.join(", ")}) wurde aufgerufen`);
+            let message = callback(user.id, this, ...args);
+            Game.users.get(user.id).ws.send(message);
+            logger.info("Game.js: " + callback.name + `(${user.id}, ${this}, ${args.join(", ")}) wurde aufgerufen`);
         });
     }
 
@@ -184,7 +184,7 @@ class Game {
      */
     getPlayerNames(users) {
         return this.players
-            .map(player => users.get(player.jwt))
+            .map(player => users.get(player.id))
             .filter(user => user && user.name)
             .map(user => user.name);
     }
@@ -197,7 +197,7 @@ class Game {
      */
     drawCards(playerId, cardIds) {
         //Auswahl des Spielers und Validierung des Zugs
-        let index = this.players.findIndex(p => p.jwt === playerId);
+        let index = this.players.findIndex(p => p.id === playerId);
         let player = this.players[index];
 
         //Auswahl was geschieht wenn der Spieler dran oder aktiv ist
@@ -250,7 +250,7 @@ class Game {
      * @returns {string|undefined} A JSON string with the updated game state, or undefined if the move is invalid.
      */
     bet(playerId, bet, fold = false) {
-        let index = this.players.findIndex(p => p.jwt === playerId);
+        let index = this.players.findIndex(p => p.id === playerId);
         let player = this.players[index];
 
         //Validiere Input
@@ -286,7 +286,7 @@ class Game {
                 "currentBet": this.getCurrentBet(),
                 "currentPot": this.getCurrentPot(),
                 "currentRound": this.getRoundName(this.currentRound),
-                "balance": this.players.find(player => player.jwt === userId).balance,
+                "balance": this.players.find(player => player.id === userId).balance,
         })});
         this.sendCallbackMessageToLobby(this.getMoveStateJSON, [this]);
   
@@ -393,7 +393,7 @@ class Game {
         }
 
         getMoveState(userId, self=this){
-            if(self.players.findIndex(p => p.jwt === userId) == self.currentPlayer){
+            if(self.players.findIndex(p => p.id === userId) == self.currentPlayer){
                 return Game.rounds[self.currentRound];
             }
             return 0;
@@ -405,7 +405,7 @@ class Game {
          */
         getHostId()
         {
-            return this.players.find(player => player.leaveGame === false).jwt;
+            return this.players.find(player => player.leaveGame === false).id;
         }
         /**
          * Gets the current total pot.
@@ -435,13 +435,13 @@ class Game {
 
         /**
          * Gets the current game state for a specific player.
-         * @param {string} jwt - The JSON Web Token of the player requesting the game state.
+         * @param {string} id - The Id of the player requesting the game state.
          * @param {Map<string, {name: string}>} users - A map of users.
          * @param {Game} self - If getGameState is called from sendCallableMessageToLobby()
          * @param {boolean} reveal - If True: Returns All Player Cards
          * @returns {string} A JSON string with the current game state.
          */
-        getGameState(jwt, self = this, reveal = false)
+        getGameState(id, self = this, reveal = false)
         {
             const data = {
                 "type": 'getGameState', 
@@ -451,9 +451,9 @@ class Game {
                 "currentPot": self.getCurrentPot(),
                 "currentRound": self.getRoundName(self.currentRound),
                 "self": null,
-                "host": jwt === self.getHostId(),
-                "moveState": self.getMoveState(jwt, self),
-                "balance": self.players.find(p => p.jwt === jwt).balance,
+                "host": id === self.getHostId(),
+                "moveState": self.getMoveState(id, self),
+                "balance": self.players.find(p => p.id === id).balance,
             };
             self.players.forEach((player, index) => {
                 if (!player.active) {
@@ -465,7 +465,7 @@ class Game {
                     return;
                 }
 
-                const isSelf = jwt === player.jwt;
+                const isSelf = id === player.id;
                 const showCards = self.currentRound == 3 || isSelf || reveal;
                 if (isSelf) {
                     data.self = index;

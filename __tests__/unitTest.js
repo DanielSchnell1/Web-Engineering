@@ -15,8 +15,8 @@ describe('Game updateCurrentPlayer', () => {
      * Sets up a new game instance before each test.
      */
     beforeEach(() => {
-        game = new Game('jwt-test-1', 'Player 1');
-        game.addPlayer('jwt-test-2', 'Player 2');
+        game = new Game('id-test-1', 'Player 1');
+        game.addPlayer('id-test-2', 'Player 2');
     });
 
     /**
@@ -89,7 +89,7 @@ describe('Game evaluateHand', () => {
      * Sets up a new game instance before each test.
      */
     beforeEach(() => {
-        game = new Game('jwt-test-1', 'Player 1');
+        game = new Game('id-test-1', 'Player 1');
     });
 
     const testCases = [
@@ -127,7 +127,7 @@ describe('Game getTieBreakerScore', () => {
      * Sets up a new game instance before each test.
      */
     beforeEach(() => {
-        game = new Game('jwt-test-1', 'Player 1');
+        game = new Game('id-test-1', 'Player 1');
     });
 
     /**
@@ -151,8 +151,8 @@ describe('Game Getter Methods', () => {
      * Sets up a new game instance with predefined player states before each test.
      */
     beforeEach(() => {
-        game = new Game('jwt-test-1', 'Player 1');
-        game.addPlayer('jwt-test-2', 'Player 2');
+        game = new Game('id-test-1', 'Player 1');
+        game.addPlayer('id-test-2', 'Player 2');
         game.players[0].bet = 15;
         game.players[1].bet = 20;
         game.currentPlayer = 1;

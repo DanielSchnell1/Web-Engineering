@@ -1,5 +1,5 @@
 //EDIT: Mehrfaches starten des SPiels verhindern
-//EDIT: getLobby(data.token) sucht die erste Lobby des Spielers. Es muss aber vor dem Aufruf validiert werden, damit der Spieler nur in einer Lobby ist.
+//EDIT: getLobby(data.id) sucht die erste Lobby des Spielers. Es muss aber vor dem Aufruf validiert werden, damit der Spieler nur in einer Lobby ist.
 
 const http = require('http');
 const path = require('path');
@@ -50,25 +50,25 @@ wss.on('connection', (ws) => {
             } catch {
                 return;
             }
-            if (data.type === 'getToken') {
+            if (data.type === 'getId') {
                 const id = uuidv4();
                 Game.users.set(id, {ws, name: null});
-                ws.send(JSON.stringify({type: 'token', token: id}));
-                //logger.log("Server.js: Nutzer beigetreten, called data.type === getToken" + id.toString());
+                ws.send(JSON.stringify({type: 'id', id: id}));
+                //logger.log("Server.js: Nutzer beigetreten, called data.type === getId" + id.toString());
                 console.log("Nutzer beigetreten: " + id);
 
             } else if(data.type === 'leave') {
-                deleteUserFromGame(data.token);
+                deleteUserFromGame(data.id);
                 ws.send(JSON.stringify({type: 'replace', path: `/`}));
 
             } else if (data.type === 'startGame') {
-                let lobby = getLobby(data.token);
+                let lobby = getLobby(data.id);
                 if (!lobby) {
                     ws.send(JSON.stringify({type: 'error', message: 'Fehler: Lobby existiert nicht'}))
                     return;
                 }
                 game = games.get(lobby);
-                if (!(game.getHostId() === data.token)) {
+                if (!(game.getHostId() === data.id)) {
                     ws.send(JSON.stringify({type: 'error', message: 'Fehler: Keine Berechtigung'}))
                     return;
                 }
@@ -78,14 +78,14 @@ wss.on('connection', (ws) => {
                 
 
             } else if (data.type === 'init') { // Erstelle Lobby oder trete bestehender bei
-                deleteUserFromGame(data.token);
-                if (data.name && Game.users.has(data.token)) {
-                    user = Game.users.get(data.token);
+                deleteUserFromGame(data.id);
+                if (data.name && Game.users.has(data.id)) {
+                    user = Game.users.get(data.id);
                     user.name = data.name;
                     if (games.has(data.lobby)) { //Fall 1: Nutzer schickt validen Lobbycode
                         let game = games.get(data.lobby);
-                        Game.users.set(data.token, user);
-                        if (!game.addPlayer(data.token, user.name)) {
+                        Game.users.set(data.id, user);
+                        if (!game.addPlayer(data.id, user.name)) {
                             ws.send(JSON.stringify({type: 'lobbyFull'}));
                             return;
                         }
@@ -98,10 +98,10 @@ wss.on('connection', (ws) => {
                         console.log(games.get(data.lobby).getPlayerNames(Game.users));
 
                     } else if (!data.lobby) {    //Fall 2: Nutzer schickt kein Lobbycode
-                        Game.users.set(data.token, user);
+                        Game.users.set(data.id, user);
                         let lobby = generateLobbyCode();
                         console.log(lobby);
-                        games.set(lobby, new Game(data.token, user.name));
+                        games.set(lobby, new Game(data.id, user.name));
                         ws.send(JSON.stringify({type: 'getLobby', lobby: lobby}));
                         ws.send(JSON.stringify({type: 'redirect', path: `lobby/${lobby}`}));
 
@@ -113,21 +113,21 @@ wss.on('connection', (ws) => {
                 }
 
             } else if (data.type === 'ws') {
-                if (Game.users.has(data.token)) {
-                    let user = Game.users.get(data.token);
+                if (Game.users.has(data.id)) {
+                    let user = Game.users.get(data.id);
                     user.ws = ws;
-                    Game.users.set(data.token, user);
+                    Game.users.set(data.id, user);
                 }
 
 
             } else if (data.type === 'getLobbyState') {
-                lobby = getLobby(data.token);
+                lobby = getLobby(data.id);
                 ws.send(JSON.stringify({type: 'lobby', users: games.get(lobby).getPlayerNames(Game.users), code: lobby}));
 
 
             } else if (data.type === 'draw') {
                 let game = games.get(data.lobby);
-                let message = game.drawCards(data.token, data.cards);
+                let message = game.drawCards(data.id, data.cards);
                 ws.send(message);
                 game.sendMessageToLobby(JSON.stringify({
                     "type": "pulse",
@@ -138,10 +138,10 @@ wss.on('connection', (ws) => {
 
             } else if (data.type === 'bet') {
                 let game = games.get(data.lobby);
-                game.bet(data.token, data.bet, data.fold);
+                game.bet(data.id, data.bet, data.fold);
 
             } else if (data.type === 'getGameState') {
-                let message = games.get(data.lobby).getGameState(data.token);
+                let message = games.get(data.lobby).getGameState(data.id);
                 ws.send(message);
              }
 
@@ -153,22 +153,22 @@ wss.on('connection', (ws) => {
 
 
     ws.on('close', () => { // Wird die Verbindung getrennt, so hat der Nutzer 10 Sekunden Zeit um sich neu zu verbinden, sonst wird er gelöscht
-        let userToken;
+        let userId;
 
-        for (const [token, user] of Game.users.entries()) {
+        for (const [id, user] of Game.users.entries()) {
             if (user.ws === ws) {
-                userToken = token;
+                userId = id;
                 break;
             }
         }
 
-        if (userToken) {
+        if (userId) {
             setTimeout(() => {
-                const user = Game.users.get(userToken);
+                const user = Game.users.get(userId);
                 if (!user || user.ws.readyState !== WebSocket.OPEN) {
-                    Game.users.delete(userToken);
-                    deleteUserFromGame(userToken);
-                    console.log("User durch Close gelöscht:", userToken);
+                    Game.users.delete(userId);
+                    deleteUserFromGame(userId);
+                    console.log("User durch Close gelöscht:", userId);
                 }
             }, 3000);
         }
@@ -180,12 +180,12 @@ wss.on('connection', (ws) => {
 
 /**
  * Logs the current list of connected users to the console for debugging purposes.
- * Iterates through the global 'users' Map and prints each user's token, name, and WebSocket connection state.
+ * Iterates through the global 'users' Map and prints each user's id, name, and WebSocket connection state.
  */
 function logUsers() {
     console.log('--- Aktuelle Nutzerliste ---');
-    for (const [token, userData] of Game.users.entries()) {
-        console.log(`Token: ${token}`);
+    for (const [id, userData] of Game.users.entries()) {
+        console.log(`Id: ${id}`);
         console.log(`  Name: ${userData.name}`);
         console.log(`  WebSocket offen: ${userData.ws.readyState === 1}`); // 1 = OPEN
     }
@@ -200,7 +200,7 @@ function deleteUserFromGame(userId) {
         for (let i = 0; i < game.players.length; i++) {
             const player = game.players[i];
 
-            if (player.jwt === userId) { //Fall 1: Spiel ist gestartet -> Spieler beim nächsten Start rauswerfen
+            if (player.id === userId) { //Fall 1: Spiel ist gestartet -> Spieler beim nächsten Start rauswerfen
                 if (game.isStarted) {
                     player.leaveGame = true;
                     player.active = false;
@@ -217,13 +217,13 @@ function deleteUserFromGame(userId) {
 
 
 /**
- * Finds the lobby code for a given player token.
- * @param {string} token - The player's unique token (JWT).
+ * Finds the lobby code for a given player id.
+ * @param {string} id - The player's unique id (id).
  * @returns {string|null} The lobby code if the player is found in a game, otherwise null.
  */
-function getLobby(token) {
+function getLobby(id) {
     for (const [lobbyCode, game] of games.entries()) {
-        if (game.players.some(player => player.jwt === token && player.leaveGame == false)) {
+        if (game.players.some(player => player.id === id && player.leaveGame == false)) {
             return lobbyCode;
         }
     }
