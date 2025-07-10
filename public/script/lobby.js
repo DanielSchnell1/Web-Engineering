@@ -10,9 +10,15 @@ ws.addEventListener("message", (event) => {
       }
       userListElement.innerHTML = "";
 
-      data.users.forEach((username) => {
+      data.users.forEach((username, index) => {
         const li = document.createElement("li");
         li.textContent = username;
+        if (data.host && index > 0) {
+          const kickButton = document.createElement("button");
+          kickButton.textContent = "Kick";
+          kickButton.id = index;
+          li.appendChild(kickButton);
+        }
         userListElement.appendChild(li);
       });
 
@@ -26,3 +32,4 @@ start = document.getElementById("start");
 start.addEventListener('click', () => {
   ws.send(JSON.stringify({ type: 'startGame', id: id }));
 });
+
