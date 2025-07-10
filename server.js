@@ -152,7 +152,7 @@ wss.on('connection', (ws) => {
     });
 
 
-    ws.on('close', () => { // Wird die Verbindung getrennt, so hat der Nutzer 10 Sekunden Zeit um sich neu zu verbinden, sonst wird er gelöscht
+    ws.on('close', () => { // Wird die Verbindung getrennt, so hat der Nutzer 3 Sekunden Zeit um sich neu zu verbinden, sonst wird er gelöscht
         let userId;
 
         for (const [id, user] of Game.users.entries()) {
@@ -202,6 +202,9 @@ function deleteUserFromGame(userId) {
 
             if (player.id === userId) { //Fall 1: Spiel ist gestartet -> Spieler beim nächsten Start rauswerfen
                 if (game.isStarted) {
+                    if(game.players[game.currentPlayer].id == userId) {
+                        game.updateCurrentPlayer();
+                    }
                     player.leaveGame = true;
                     player.active = false;
                     game.sendCallbackMessageToLobby(game.getGameState);
