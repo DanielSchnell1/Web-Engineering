@@ -58,6 +58,7 @@ class Game {
         this.currentPlayer = 0;
         this.currentRound = 0;
         this.betNoRepeat = true;    // Gibt an, ob eine Setzrunde noch nicht wiederholt wurde
+        this.cardScore = 0;
         logger.info("Game.js: Constructed Game");
     }
 
@@ -172,6 +173,7 @@ class Game {
             player.active = true;
             player.bet = 5;
             player.cards = [];
+            player.cardScore = 0;
         });
         this.dealCards();
         this.sendCallbackMessageToLobby(this.getGameState);
@@ -334,9 +336,9 @@ class Game {
 
         //Return message from gameEnd
         if (this.currentRound === 3) {
-            this.sendCallbackMessageToLobby(this.getGameState);
             logger.info("Game.js: Spiel ende identifiziert. aufruf game.js gameEnd()");
             this.gameEnd();
+            this.sendCallbackMessageToLobby(this.getGameState, [true]);
         }
     }
 
@@ -346,41 +348,24 @@ class Game {
      * @returns {string} A JSON string with the winner's name and the final pot.
      */
     gameEnd() {
-        let highScore = 0;
-        let highScoringPlayers = [];
-        let winner = null;
-
-        this.players.filter(p => p.active).forEach(player => {
-            const score = this.evaluateHand(player.cards);
-
-            if (score > highScore) {
-                highScore = score;
-                highScoringPlayers = [player];  // Neuer Highscore → Liste neu starten
-            } else if (score === highScore) {
-                highScoringPlayers.push(player);  // Gleichstand → Spieler zur Liste hinzufügen
+        // Zuerst den Score für jeden aktiven Spieler berechnen und speichern
+        this.players.forEach(player => {
+            if (player.active) {
+                player.cardScore = this.evaluateHand(player.cards) + this.getTieBreakerScore(player.cards);
             }
         });
 
-        // Wenn nur ein Spieler den höchsten Score hat
-        if (highScoringPlayers.length === 1) {
-            winner = highScoringPlayers[0];
-        } else {
-            // Tie-Breaker notwendig
-            winner = highScoringPlayers[0];
-            let bestTieBreakerScore = this.getTieBreakerScore(winner.cards);
+        // Die Spieler basierend auf dem cardScore absteigend sortieren
+        const activePlayers = this.players.filter(p => p.active);
+        activePlayers.sort((a, b) => b.cardScore - a.cardScore);
 
-            for (let i = 1; i < highScoringPlayers.length; i++) {
-                const player = highScoringPlayers[i];
-                const tieBreakerScore = this.getTieBreakerScore(player.cards);
+        // Den Gewinner ermitteln (der erste Spieler in der sortierten Liste)
+        const winner = activePlayers.length > 0 ? activePlayers[0] : null;
 
-                if (tieBreakerScore > bestTieBreakerScore) {
-                    bestTieBreakerScore = tieBreakerScore;
-                    winner = player;
-                }
-            }
+        if (winner) {
+            logger.info(`game.js: Winner: ${winner.name} with score ${winner.cardScore}, Pot: ${this.getCurrentPot()}`);
+            winner.balance += this.getCurrentPot();
         }
-        logger.info("game.js: Winner: " + winner.name + "Pot:" + this.getCurrentPot());
-        winner.balance += this.getCurrentPot();
     }
 
 
@@ -461,6 +446,7 @@ class Game {
                         "user": null,
                         "cards": null,
                         "balance": null,
+                        "cardScore": null
                     });
                     return;
                 }
@@ -474,7 +460,8 @@ class Game {
                 data.players.push({
                     "user": player.name,
                     "cards": showCards ? player.cards : Array(player.cards.length).fill("rueckseite"),
-                    "balance": player.balance
+                    "balance": player.balance,
+                    "cardScore": player.cardScore
                 });
 
                 logger.info("game.js: Started game state generation. Assigned cards for player");
@@ -483,17 +470,9 @@ class Game {
             return JSON.stringify(data);
         }
 
-        
 
-        /**
-         * A map of card suit rankings.
-         * @type {Object.<string, number>}
-         */
         cardRanking = {'pik': 4, 'herz': 3, 'karo': 2, 'kreuz': 1};
-        /**
-         * A map of card value rankings.
-         * @type {Object.<string, number>}
-         */
+
         valueRanking = {
             '2': 2,
             '3': 3,

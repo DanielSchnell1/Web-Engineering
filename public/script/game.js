@@ -96,15 +96,18 @@ const drawCards = [];
           leaderboard_list.innerHTML = '';
           console.log(data);
 
+          data.players.sort((a, b) => b.cardScore - a.cardScore);
+
           data.players.forEach((player) => {
             if(!player.user) return;
+            //erstellen des leaderboards
             leaderboard_list.innerHTML += `
               <li class="leaderboardEntry">
                 <span class="playerName">${player.user}</span>
                 <div class="playerCards">
                 ${player.cards.map(card => `<img src="/img/cards/${card}.svg" alt="${card}" />`).join('')}
                 <div>
-                <span class="playerBalance">${player.balance} Chips</span>
+                <span class="playerBalance">${player.cardScore} Chips</span>
 
               </li>`;
           });
