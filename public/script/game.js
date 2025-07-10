@@ -208,15 +208,20 @@ const drawCards = [];
     const communityCards = ['herz 10', 'pik 7', 'karo 2', 'karo dame', 'pik ass'];
     const communityDiv = document.getElementById('community');
 
-    communityCards.forEach(card => {
+    communityCards.forEach((card, index) => {
       const img = document.createElement('img');
       img.src = `/img/cards/${card}.svg`;
       img.alt = card;
       communityDiv.appendChild(img);
+      img.tabIndex = 0;
+      img.setAttribute('role', 'button');
+      img.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          img.click();
+        }
+      });
+      communityDiv.appendChild(img);
     });
-
-
-
 
     /**
      * Updates the bet value display in real-time as the user moves the slider.
