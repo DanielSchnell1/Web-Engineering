@@ -48,6 +48,12 @@ img {
     border: 1px solid #333;
 }
 
+.cards img {
+    width: 38px;
+    max-width: 100px;
+    height: auto;
+}
+
 .table {
     width: 80vw;
     height: 40vw;
@@ -127,6 +133,7 @@ img {
     align-items: center;
     justify-content: center;
     height: 7%;
+    gap: 50px;
 }
 
 #self {
@@ -146,6 +153,7 @@ img {
     display: flex;
     flex-direction: column;
     align-items: center;
+
 }
 
 .selected {
@@ -386,3 +394,4 @@ img {
   line-height: 1;
   height: 40px; 
 }
+
