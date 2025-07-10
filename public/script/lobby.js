@@ -5,8 +5,10 @@ ws.addEventListener("message", (event) => {
     const data = JSON.parse(event.data);
     if (data.type === "lobby" && Array.isArray(data.users)) {
       const userListElement = document.getElementById("userList");
+      const startButton = document.getElementById("start");
       if(data.host) {
-        document.getElementById("start").style.display = 'flex';
+        startButton.style.display = 'flex';
+        startButton.disabled = data.users.length < 2;
       }
       userListElement.innerHTML = "";
 
