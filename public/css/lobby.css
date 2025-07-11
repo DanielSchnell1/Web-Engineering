@@ -1,197 +1,202 @@
 body, input, button, h1, h2, h3, p {
-      font-family: initial;
-    }
-    
+    font-family: initial;
+}
+
 body {
-  margin: 0;
-  padding: 0;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100vh;
-  padding: 0;
+    margin: 0;
+    padding: 0;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    padding: 0;
 }
 
 h1 {
-  font-size: 3em;
-  margin-bottom: 20px;
-  color: #2aaa43;
-  animation: floatTitle 3s ease-in-out infinite;
+    font-size: 3em;
+    margin-bottom: 20px;
+    color: #2aaa43;
+    animation: floatTitle 3s ease-in-out infinite;
 }
 
 body::before {
-  content: '';
-  background-image: url('/img/design/header.png'); 
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: top center;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 120px;
-  pointer-events: none;
-  opacity: 1.0;
+    content: '';
+    background-image: url('/img/design/header.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: top center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 120px;
+    pointer-events: none;
+    opacity: 1.0;
 }
 
 #lobbyDiv {
-  background-color: #2c2c2c;
-  border: 2px solid #444;
-  border-radius: 15px;
-  padding: 25px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.5);
-  width: 300px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
+    background-color: #2c2c2c;
+    border: 2px solid #444;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
 }
 
 #code {
-  font-size: 1.2em;
-  text-align: center;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 12px;
-  background-color: #1a1a1a;
-  color: #2aaa43; 
-  width: 100%;
+    font-size: 1.2em;
+    text-align: center;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    background-color: #1a1a1a;
+    color: #2aaa43;
+    width: 100%;
 }
 
 #copyBtn {
-  background-color: #2aaa43;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 10px;
-  cursor: pointer;
-  color: white;
-  transition: background-color 0.2s ease;
+    background-color: #2aaa43;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    color: white;
+    transition: background-color 0.2s ease;
 }
 
 #copyBtn:hover {
-  background-color: #3b6c2f;
+    background-color: #3b6c2f;
 }
 
 #submit {
-  padding: 12px 16px;
-  background-color: #2aaa43;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 1em;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  width: 100%;
+    padding: 12px 16px;
+    background-color: #2aaa43;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
 }
 
 #submit:hover {
-  background-color: #4a8c3f;
+    background-color: #4a8c3f;
 }
 
 #start {
-  background-color: #2aaa43;
-  border: none;
-  border-radius: 8px;
-  padding: 0;
-  color: white;
-  font-size: 1em;
-  cursor: pointer;
-  transition: 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 45%;
-  height: 43px;                     
-  line-height: normal;
+    background-color: #2aaa43;
+    border: none;
+    border-radius: 8px;
+    padding: 0;
+    color: white;
+    font-size: 1em;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45%;
+    height: 43px;
+    line-height: normal;
 }
 
 #start:hover {
-  background-color: #1f5639;
+    background-color: #1f5639;
 }
 
 #userList {
-  list-style: none;
-  padding: 10px;
-  width: 100%;
-  background-color: #1a1a1a;
-  border-radius: 8px;
-  border: 1px solid #444;
-  color: white;
+    list-style: none;
+    padding: 10px;
+    width: 100%;
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    border: 1px solid #444;
+    color: white;
 }
 
 #userList li {
-  padding: 6px;
-  border-bottom: 1px solid #333;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px;
+    border-bottom: 1px solid #333;
 }
 
 button.dialogBtn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  border: none;
-  background-color: #2aaa43;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: none;
+    background-color: #2aaa43;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 dialog {
-  background-color: #2c2c2c;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 20px;
+    background-color: #2c2c2c;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 20px;
 }
 
 /* Mobile Portrait (unter 600px) */
 @media (max-width: 600px) {
-  body {
-    padding: 20px;
-  }
+    body {
+        padding: 20px;
+    }
 
-  h1 {
-    font-size: 2em;
-  }
+    h1 {
+        font-size: 2em;
+    }
 
-  #lobbyDiv {
-    width: 100%;
-    padding: 15px;
-    gap: 10px;
-  }
+    #lobbyDiv {
+        width: 100%;
+        padding: 15px;
+        gap: 10px;
+    }
 
-  #lobbyDiv input[type="text"],
-  #submit,
-  #start {
-    width: 100%;
-    font-size: 1em;
-  }
+    #lobbyDiv input[type="text"],
+    #submit,
+    #start {
+        width: 100%;
+        font-size: 1em;
+    }
 
-  #copyBtn {
-    width: 100%;
-  }
+    #copyBtn {
+        width: 100%;
+    }
 }
 
 /* Tablets (600px–900px) */
 @media (max-width: 900px) {
-  #lobbyDiv {
-    width: 80%;
-  }
+    #lobbyDiv {
+        width: 80%;
+    }
 
-  h1 {
-    font-size: 2.5em;
-  }
+    h1 {
+        font-size: 2.5em;
+    }
 
-  #start {
-    font-size: 1em;
-  }
+    #start {
+        font-size: 1em;
+    }
 }
 
 #userList li {
-  color: #28a745; /* Grün */
-  font-weight: bold;
+    color: #28a745; /* Grün */
+    font-weight: bold;
 }
