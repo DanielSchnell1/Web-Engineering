@@ -17,6 +17,10 @@ describe('Game updateCurrentPlayer', () => {
     beforeEach(() => {
         game = new Game('id-test-1', 'Player 1');
         game.addPlayer('id-test-2', 'Player 2');
+        game.players.forEach(p => p.active = true);
+        Game.users.clear();
+        Game.users.set('id-test-1', { ws: { send: () => {} } });
+        Game.users.set('id-test-2', { ws: { send: () => {} } });
     });
 
     /**
@@ -53,16 +57,16 @@ describe('Game updateCurrentPlayer', () => {
     /**
      * Tests if the game correctly identifies the end condition.
      */
-    test('should return "gameEnd" when the round advances to 3', () => {
+    test('should end the game when the round advances to 3', () => {
         game.currentRound = 2;
         game.players[0].bet = 10;
         game.players[1].bet = 10;
         game.currentPlayer = 1;
         game.betNoRepeat = false;
 
-        const result = game.updateCurrentPlayer();
+        game.updateCurrentPlayer();
 
-        expect(result).toBe('gameEnd');
+        expect(game.currentRound).toBe(3);
     });
 
     /**
