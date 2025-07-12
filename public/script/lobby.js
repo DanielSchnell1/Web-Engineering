@@ -35,3 +35,10 @@ start.addEventListener('click', () => {
   ws.send(JSON.stringify({ type: 'startGame', id: id }));
 });
 
+
+console.log("start");
+
+document.getElementById('start').addEventListener('click', () => {
+  console.log("start");
+})
+

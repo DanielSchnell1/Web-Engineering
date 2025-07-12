@@ -43,6 +43,7 @@ const wss = new WebSocket.Server({server});
 wss.on('connection', (ws) => {
 
     ws.on('message', (message) => {
+        console.log(message);
         try {
             let data;
             try {
@@ -71,13 +72,13 @@ wss.on('connection', (ws) => {
                 const game = games.get(lobby);
 
                 // Check 1: Is the person starting the game the host (player 0)?
-                if (game.players[0].id !== data.id) {
+                if (game.getHostId() !== data.id) {
                     ws.send(JSON.stringify({type: 'error', message: 'Fehler: Nur der Host kann das Spiel starten.'}));
                     return;
                 }
 
                 // Check 2: Is there more than one player?
-                if (game.players.length < 2) {
+                if (game.playersLength() < 2) {
                     ws.send(JSON.stringify({type: 'error', message: 'Nicht genügend Spieler in der Lobby.'}));
                     return;
                 }

@@ -55,7 +55,7 @@ class Game {
         this.players = [];
         this.addPlayer(id, name);
         this.deck = null;
-        this.currentPlayer = 0;
+        this.currentPlayer = this.getHostIndex();
         this.currentRound = 0;
         this.betNoRepeat = true;    // Gibt an, ob eine Setzrunde noch nicht wiederholt wurde
         this.cardScore = 0;
@@ -160,7 +160,7 @@ class Game {
      */
     start() {
         this.isStarted = true;
-        this.currentPlayer = 0;
+        this.currentPlayer = this.getHostIndex();
         this.currentRound = 0;
         this.deck = this.createShuffledDeck();
         logger.info("game.js: Initialised Game variabels and setting player variabels");
@@ -298,7 +298,7 @@ class Game {
      * @returns {string|undefined} A JSON string with the game end state, or undefined if the game continues.
      */
     updateCurrentPlayer() {
-        if (this.players.filter(p => p.active).length < 2) {
+        if (this.players.filter(p => p.active).length == 1) {
             this.currentRound = 3;
             this.sendCallbackMessageToLobby(this.getGameState, [true]);
             logger.info("Game.js: Spiel ende identifiziert. aufruf game.js gameEnd()");
@@ -307,9 +307,9 @@ class Game {
         }
         do {
             this.currentPlayer = (this.currentPlayer + 1) % this.players.length;
-        } while (!this.players[this.currentPlayer].active);
+        } while (!this.players[this.currentPlayer].active || this.players[this.currentPlayer].leaveGame);
 
-        if (this.currentPlayer == 0) {
+        if (this.currentPlayer == this.getHostIndex()) {
             this.betNoRepeat = false;
         }
 
@@ -321,12 +321,12 @@ class Game {
                 .every(p => p.bet == this.getCurrentBet() ||
                     (p.bet < this.getCurrentBet() &&
                         p.bet == p.balance)) &&
-            (!this.betNoRepeat || this.currentPlayer === 0)
+            (!this.betNoRepeat || this.players[this.currentPlayer].id == this.getHostId())
         ) {
             this.currentRound = this.currentRound + 1;
             if (!this.betNoRepeat) {
                 this.betNoRepeat = true;
-                this.currentPlayer = 0;
+                this.currentPlayer = this.getHostIndex();
             }
         }
         logger.info("game.js: Set next player as current player. Now in Gameround: " + this.currentRound);
@@ -391,6 +391,21 @@ class Game {
      */
     getHostId() {
         return this.players.find(player => player.leaveGame === false).id;
+    }
+
+    /**
+     * Gets the current Index of the host.
+     * @returns {number} The index of the Host in players
+     */
+    getHostIndex() {
+        return this.players.findIndex(player => player.id == this.getHostId())
+    }
+    /**
+     * Gets the length of the players who are still
+     * @returns {number} The length of the players, who aren't leaving
+     */
+    playersLength() {
+        return this.players.filter(player => !player.leaveGame).length;
     }
 
     /**
