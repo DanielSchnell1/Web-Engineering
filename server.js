@@ -59,8 +59,8 @@ wss.on('connection', (ws) => {
                 console.log("Nutzer beigetreten: " + id);
 
             } else if(data.type === 'leave') {
-                deleteUserFromGame(data.id);
                 ws.send(JSON.stringify({type: 'replace', path: `/`}));
+                deleteUserFromGame(data.id);
 
             } else if (data.type === 'startGame') {
                 const lobby = getLobby(data.id);
@@ -225,18 +225,23 @@ function sendLobbyStateUpdate(game, lobby) {
  */
 function deleteUserFromGame(userId) {
     games.forEach((game, lobby) => {
+
         for (let i = 0; i < game.players.length; i++) {
             const player = game.players[i];
 
-            if (player.id === userId) { //Fall 1: Spiel ist gestartet -> Spieler beim nächsten Start rauswerfen
-                if (game.isStarted) {
+            if (player.id === userId) { 
+                if(game.playersLength() <= 1) { // Fall 1: Lobby ist (danach) leer und wird gelöscht
+                    games.delete(lobby);
+                    return;
+                }
+                if (game.isStarted) { //Fall 2: Spiel ist gestartet -> Spieler beim nächsten Start rauswerfen
                     if(game.players[game.currentPlayer].id == userId) {
                         game.updateCurrentPlayer();
                     }
                     player.leaveGame = true;
                     player.active = false;
                     game.sendCallbackMessageToLobby(game.getGameState);
-                } else { //Fall 2: Noch in der Lobby -> Spieler wird sofort rausgeworfen
+                } else { //Fall 3: Noch in der Lobby -> Spieler wird sofort rausgeworfen
                     game.players.splice(i, 1);
                     i--;
                     sendLobbyStateUpdate(game, lobby);
