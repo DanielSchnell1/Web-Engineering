@@ -90,7 +90,7 @@ body::before {
 }
 
 #start {
-    background-color: #2aaa43;
+    background-color: #1e3b17;
     border: none;
     border-radius: 8px;
     padding: 0;
@@ -107,7 +107,8 @@ body::before {
 }
 
 #start:hover {
-    background-color: #1f5639;
+    background-color: #4a8c3f;
+    transition: 0.4s;
 }
 
 #userList {
@@ -138,7 +139,7 @@ button.dialogBtn {
     height: 45px;
     border-radius: 50%;
     border: none;
-    background-color: #2aaa43;
+    background-color: #1e3b17;
     color: white;
     display: flex;
     align-items: center;
