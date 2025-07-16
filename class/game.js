@@ -300,9 +300,9 @@ class Game {
     updateCurrentPlayer() {
         if (this.players.filter(p => p.active).length == 1) {
             this.currentRound = 3;
+            this.gameEnd();
             this.sendCallbackMessageToLobby(this.getGameState, [true]);
             logger.info("Game.js: Spiel ende identifiziert. aufruf game.js gameEnd()");
-            this.gameEnd();
             return;
         }
         do {

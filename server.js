@@ -139,6 +139,34 @@ wss.on('connection', (ws) => {
                 }
 
 
+            } else if (data.type === 'kickPlayer') {
+                const lobby = getLobby(data.id);
+                if (!lobby) return; // Lobby nicht gefunden
+
+                const game = games.get(lobby);
+
+                // Schritt 1: Validierung
+                // Ist der Absender der Host und ist der kickIndex gültig?
+                if (game.getHostId() === data.id && game.players[data.kickIndex]) {
+                    
+                    // Schritt 2: Aktion & Benachrichtigung des gekickten Spielers
+                    const kickedPlayer = game.players[data.kickIndex];
+                    if(kickedPlayer.id === data.id) return; // Host kann sich nicht selbst kicken
+
+                    const kickedUser = Game.users.get(kickedPlayer.id);
+                    if (kickedUser && kickedUser.ws) {
+                        // Sende eine Nachricht an den gekickten Spieler, um ihn zum Hauptmenü weiterzuleiten
+                        kickedUser.ws.send(JSON.stringify({ type: 'replace', path: '/' }));
+                    }
+
+                    // Spieler aus dem Array entfernen
+                    game.players.splice(data.kickIndex, 1);
+
+                    // Schritt 3: Update an den Rest der Lobby
+                    sendLobbyStateUpdate(game, lobby);
+                }
+
+
             } else if (data.type === 'draw') {
                 let game = games.get(data.lobby);
                 let message = game.drawCards(data.id, data.cards);
