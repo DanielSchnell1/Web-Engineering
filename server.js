@@ -1,5 +1,7 @@
 //EDIT: Mehrfaches starten des SPiels verhindern
 //EDIT: getLobby(data.id) sucht die erste Lobby des Spielers. Es muss aber vor dem Aufruf validiert werden, damit der Spieler nur in einer Lobby ist.
+//EDIT: Wenn Spieler keine Chips mehr hat: Neuer Rundenstart sollte nicht funktionieren, Einsatz ist verbuggt
+
 
 const http = require('http');
 const path = require('path');
