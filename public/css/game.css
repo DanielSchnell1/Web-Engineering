@@ -368,3 +368,14 @@ img {
 #drawButton:hover {
     background-color: #2c4e24;
 }
+
+#startGameBtn {
+    margin-top: 10px;
+    margin-left: 10px;
+    width: 20%;
+}
+
+#leaveBtn {
+    margin-top: 10px;
+    width: 20%;
+}

@@ -40,7 +40,9 @@
     <ul>
 
     </ul>
-    <button id="leaveBtn" class="redBtn">Verlassen</button>
+    </div id="leaderboardControls">
+      <button id="leaveBtn" class="redBtn">Verlassen</button>
+    </div>
   </dialog>
   
   <button onclick="fetch('/html/pokerhands.html').then(r=>r.text()).then(h=>{let d=document.getElementById('pokerhands');d.innerHTML=h;d.showModal();})"
