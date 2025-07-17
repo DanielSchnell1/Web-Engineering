@@ -225,7 +225,7 @@ img {
     .cards {
         gap: 5px;
         width: 50px;
-        hight: auto;
+        height: auto;
     }
 
     .cards img {

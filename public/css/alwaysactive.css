@@ -19,7 +19,7 @@ input {
 
 button, input[type="button"] {
     border: none;
-    background-color: #1e3b17;
+    background-color: #3b6c2f;
     border-radius: 13px;
     color: rgb(241, 241, 241);
     height:35px;
@@ -33,6 +33,7 @@ button, input[type="button"] {
 }
 
 button:hover, input[type="button"]:hover {
-    background-color: #4a8c3f;
+    background-color: #1e3b17;
     transition: 0.4s;
 }
+
