@@ -18,7 +18,7 @@ ws.addEventListener("message", (event) => {
             if (data.host && index > 0) {
                 const kickButton = document.createElement("button");
                 kickButton.textContent = "Kick";
-                kickButton.className = "kick-button"; // Klasse für Styling und Identifizierung
+                kickButton.className = "kick-button redBtn"; // Klasse für Styling und Identifizierung
                 kickButton.dataset.kickIndex = index; // Speichert den Index im Button
                 li.appendChild(kickButton);
             }

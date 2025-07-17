@@ -74,7 +74,6 @@ h1 {
 /* Button Styling */
 #lobbyDiv button {
   padding: 14px 16px; /* vorher 12px oder weniger */
-  background-color: #3b6c2f;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -90,10 +89,6 @@ h1 {
 }
 
 
-#lobbyDiv button:hover {
-  background-color: #1e3b17;
-  transition: background-color 0.4s ease;
-}
 
 /* Optional Shadow on Hover for All Inner Elements */
 #lobbyDiv *:hover {

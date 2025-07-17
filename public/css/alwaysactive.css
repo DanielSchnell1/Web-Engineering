@@ -32,8 +32,12 @@ button, input[type="button"] {
     justify-content: center;
 }
 
+.redBtn {
+    background-color: #aa2a2a;
+}
+
 button:hover, input[type="button"]:hover {
-    background-color: #1e3b17;
+    filter: brightness(70%);
     transition: 0.4s;
 }
 

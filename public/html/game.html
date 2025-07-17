@@ -31,7 +31,7 @@
     <div>
       <button class = "bet" id="betButton">Setzen</button>
       <button id="drawButton">Karten tauschen</button>
-      <button class = "bet" id="foldButton">Passen</button>  
+      <button class = "bet redBtn" id="foldButton">Passen</button>  
     </div>
   </div>  
   <dialog id="pokerhands">
@@ -40,7 +40,7 @@
     <ul>
 
     </ul>
-    <button id="leaveBtn">Verlassen</button>
+    <button id="leaveBtn" class="redBtn">Verlassen</button>
   </dialog>
   
   <button onclick="fetch('/html/pokerhands.html').then(r=>r.text()).then(h=>{let d=document.getElementById('pokerhands');d.innerHTML=h;d.showModal();})"
