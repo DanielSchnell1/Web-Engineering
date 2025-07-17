@@ -379,3 +379,10 @@ img {
     margin-top: 10px;
     width: 20%;
 }
+
+.playerBalance {
+    width: 100%;
+    text-align: bottom;
+    font-weight: normal;
+    margin-bottom: 5px;
+}
