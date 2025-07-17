@@ -354,7 +354,19 @@ class Game {
         const winner = activePlayers.length > 0 ? activePlayers[0] : null;
 
         logger.info(`game.js: Winner: ${winner.name} with score ${winner.cardScore}, Pot: ${this.getCurrentPot()}`);
-        winner.balance += this.getCurrentPot();
+        this.payOut(activePlayers)
+
+    }
+
+    payOut(activePlayerSortedByScore ){
+        const winner = activePlayerSortedByScore[0];
+        activePlayerSortedByScore.forEach(player => {
+            if(player.id != winner.id){
+                player.balance = player.balance - player.bet;
+            }else {
+                winner.balance += this.getCurrentPot();
+            }
+        })
     }
 
     /**
