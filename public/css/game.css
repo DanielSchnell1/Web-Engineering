@@ -239,34 +239,6 @@ img {
     }
 }
 
-@media (max-width: 550px) {
-    .table {
-        height: 70vw;
-        border-width: 6px;
-    }
-
-    #controls input[type=range] {
-        width: 140px;
-    }
-
-    #cards1 {
-        display: none;
-    }
-
-    button,
-    #betButton,
-    #foldButton {
-        font-size: 14px;
-        padding: 8px 12px;
-    }
-
-    .infobar {
-        font-size: 0.95em;
-        padding: 10px 15px;
-    }
-}
-
-
 #endGameDialog {
   color: white;
   border: none;

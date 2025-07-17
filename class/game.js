@@ -364,7 +364,7 @@ class Game {
             if(player.id != winner.id){
                 player.balance = player.balance - player.bet;
             }else {
-                winner.balance += this.getCurrentPot();
+                winner.balance += this.getCurrentPot() - winner.bet;
             }
         })
     }
