@@ -385,6 +385,15 @@ class Game {
         return 0;
     }
 
+
+
+    /**
+     * Gets the Id of the first active player (smallest index in players)
+     * @returns {String} The host Id.
+     */
+    getFirstActivePlayerId(){
+        return this.players.find(player => player.active == true).id;
+    }
     /**
      * Gets the current Id of the host.
      * @returns {String} The host Id.

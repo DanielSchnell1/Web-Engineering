@@ -56,3 +56,6 @@
         margin-right: 10px;
         min-width: 25%;
     }
+    #closeBtn {
+      width: 20%;
+    }
