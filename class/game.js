@@ -305,13 +305,14 @@ class Game {
             logger.info("Game.js: Spiel ende identifiziert. aufruf game.js gameEnd()");
             return;
         }
+        if (this.currentPlayer == this.getLastActivePlayerIndex()) {
+            this.betNoRepeat = false;
+        }
         do {
             this.currentPlayer = (this.currentPlayer + 1) % this.players.length;
         } while (!this.players[this.currentPlayer].active || this.players[this.currentPlayer].leaveGame);
 
-        if (this.currentPlayer == this.getHostIndex()) {
-            this.betNoRepeat = false;
-        }
+        
 
 
         //beendet die Tausch/Setzrunde erst, wenn Alle Einsätze gleich sind. Oder wenn der erste Spieler dran ist (bei Tauschrunden)
@@ -321,12 +322,12 @@ class Game {
                 .every(p => p.bet == this.getCurrentBet() ||
                     (p.bet < this.getCurrentBet() &&
                         p.bet == p.balance)) &&
-            (!this.betNoRepeat || this.players[this.currentPlayer].id == this.getHostId())
+            (!this.betNoRepeat && this.currentPlayer == this.getFirstActivePlayerIndex())
         ) {
             this.currentRound = this.currentRound + 1;
             if (!this.betNoRepeat) {
                 this.betNoRepeat = true;
-                this.currentPlayer = this.getHostIndex();
+                this.currentPlayer = this.getFirstActivePlayerIndex();
             }
         }
         logger.info("game.js: Set next player as current player. Now in Gameround: " + this.currentRound);
@@ -388,8 +389,22 @@ class Game {
 
 
     /**
-     * Gets the Id of the first active player (smallest index in players)
-     * @returns {String} The host Id.
+     * Gets the Index of the last active player (last means: biggest index in players)
+     * @returns {number} The index of the last active player.
+     */
+    getLastActivePlayerIndex(){
+        return this.players.findLastIndex(player => player.active);
+    }
+    /**
+     * Gets the Index of the first active player (first means: smallest index in players)
+     * @returns {number} The index of the first active player.
+     */
+    getFirstActivePlayerIndex(){
+        return this.players.findIndex(player => player.id == this.getFirstActivePlayerId())
+    }
+    /**
+     * Gets the Id of the first active player (first means: smallest index in players)
+     * @returns {String} The Id of the first active player.
      */
     getFirstActivePlayerId(){
         return this.players.find(player => player.active == true).id;
