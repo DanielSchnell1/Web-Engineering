@@ -166,7 +166,6 @@ class Game {
         logger.info("game.js: Initialised Game variabels and setting player variabels");
         this.players = this.players.filter(p => !p.leaveGame);
         this.players.forEach((player) => {
-            player.balance -= player.bet;
             if (player.balance < 5) {
                 player.active = false;
                 return;
