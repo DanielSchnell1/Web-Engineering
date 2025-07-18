@@ -14,12 +14,6 @@ img:hover {
     transform: scale(1.05);
 }
 
-img {
-    margin: 0px;
-    padding: 0;
-    width: 30%;
-    height: auto;
-}
 
 @keyframes pulse {
     0% {
@@ -42,14 +36,14 @@ img {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 10px;
-    padding: 12px;
+    gap: 1%;
+    padding: 2%;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
     border: 1px solid #333;
 }
 
 .cards img {
-    width: 35%;
+    width: 20%;
     max-width: 100px;
     height: auto;
 }
