@@ -166,6 +166,9 @@ ws.addEventListener('message', (event) => {
                 let cardsDiv = document.getElementById(`cards${index}`);
                 const src = `/img/cards/${card}.svg`
                 const img = document.createElement('img');
+                if(data.self == index) {
+                    img.tabIndex="0";
+                }
                 img.src = src;
                 img.alt = card;
                 img.className = "card";
@@ -180,6 +183,20 @@ ws.addEventListener('message', (event) => {
                     } else {
                         img.classList.add('selected');
                         drawCards.push(id);
+                    }
+                });
+                img.addEventListener('keydown', (event) => {
+                    // Check if the Enter key (keyCode 13) was pressed
+                    if (event.key === 'Enter') {
+                        const id = img.id;
+                        if (img.classList.contains('selected')) {
+                            img.classList.remove('selected');
+                            const index = drawCards.indexOf(id);
+                            if (index > -1) drawCards.splice(index, 1);
+                        } else {
+                            img.classList.add('selected');
+                            drawCards.push(id);
+                        }
                     }
                 });
                 cardsDiv.appendChild(img);
