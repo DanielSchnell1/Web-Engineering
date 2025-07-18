@@ -347,13 +347,13 @@ class Game {
     gameEnd() {
         this.calculateFinalScore();
 
-        const activePlayers = this.players.filter(p => p.active);
-        activePlayers.sort((a, b) => b.cardScore - a.cardScore);
+        const sortedPlayers = this.players;
+        sortedPlayers.sort((a, b) => b.cardScore - a.cardScore);
 
-        const winner = activePlayers.length > 0 ? activePlayers[0] : null;
+        const winner = sortedPlayers.length > 0 ? sortedPlayers[0] : null;
 
         logger.info(`game.js: Winner: ${winner.name} with score ${winner.cardScore}, Pot: ${this.getCurrentPot()}`);
-        this.payOut(activePlayers)
+        this.payOut(sortedPlayers)
 
     }
 
