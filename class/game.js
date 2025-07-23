@@ -1,6 +1,3 @@
-//EDIT: optional: Validierung, ob eigene Karten getauscht werden (kein Sicherheitsrisiko, aber Anzeigefehler)
-
-
 const logger = require('../logger/logger');
 
 
@@ -138,7 +135,6 @@ class Game {
             logger.info("Game.js: " + callback.name + `(${user.id}, ${this}, ${args.join(", ")}) wurde aufgerufen`);
         });
     }
-
 
     /**
      * Deals cards to each player.
@@ -288,8 +284,6 @@ class Game {
             })
         });
         this.sendCallbackMessageToLobby(this.getMoveStateJSON, [this]);
-
-
     }
 
     /**
@@ -310,8 +304,6 @@ class Game {
         do {
             this.currentPlayer = (this.currentPlayer + 1) % this.players.length;
         } while (!this.players[this.currentPlayer].active || this.players[this.currentPlayer].leaveGame);
-
-        
 
 
         //beendet die Tausch/Setzrunde erst, wenn Alle Einsätze gleich sind. Oder wenn der erste Spieler dran ist (bei Tauschrunden)
@@ -354,15 +346,14 @@ class Game {
 
         logger.info(`game.js: Winner: ${winner.name} with score ${winner.cardScore}, Pot: ${this.getCurrentPot()}`);
         this.payOut(sortedPlayers)
-
     }
 
-    payOut(activePlayerSortedByScore ){
+    payOut(activePlayerSortedByScore) {
         const winner = activePlayerSortedByScore[0];
         activePlayerSortedByScore.forEach(player => {
-            if(player.id != winner.id){
+            if (player.id != winner.id) {
                 player.balance = player.balance - player.bet;
-            }else {
+            } else {
                 winner.balance += this.getCurrentPot() - winner.bet;
             }
         })
@@ -372,7 +363,7 @@ class Game {
      * Calculates the final score of each player. Concatinates the hand combination score and the tie breaker score.
      * @returns {string} A JSON string with the final score of each player.
      */
-    calculateFinalScore(){
+    calculateFinalScore() {
         this.players.forEach(player => {
             if (player.active) {
                 let handCombinationScore = this.evaluateHand(player.cards).toString()
@@ -398,28 +389,30 @@ class Game {
     }
 
 
-
     /**
      * Gets the Index of the last active player (last means: biggest index in players)
      * @returns {number} The index of the last active player.
      */
-    getLastActivePlayerIndex(){
+    getLastActivePlayerIndex() {
         return this.players.findLastIndex(player => player.active);
     }
+
     /**
      * Gets the Index of the first active player (first means: smallest index in players)
      * @returns {number} The index of the first active player.
      */
-    getFirstActivePlayerIndex(){
+    getFirstActivePlayerIndex() {
         return this.players.findIndex(player => player.id == this.getFirstActivePlayerId())
     }
+
     /**
      * Gets the Id of the first active player (first means: smallest index in players)
      * @returns {String} The Id of the first active player.
      */
-    getFirstActivePlayerId(){
+    getFirstActivePlayerId() {
         return this.players.find(player => player.active == true).id;
     }
+
     /**
      * Gets the current Id of the host.
      * @returns {String} The host Id.
@@ -435,6 +428,7 @@ class Game {
     getHostIndex() {
         return this.players.findIndex(player => player.id == this.getHostId())
     }
+
     /**
      * Gets the length of the players who are still
      * @returns {number} The length of the players, who aren't leaving

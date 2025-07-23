@@ -1,14 +1,9 @@
-//EDIT: Mehrfaches starten des SPiels verhindern
-//EDIT: getLobby(data.id) sucht die erste Lobby des Spielers. Es muss aber vor dem Aufruf validiert werden, damit der Spieler nur in einer Lobby ist.
-//EDIT: Wenn Spieler keine Chips mehr hat: Neuer Rundenstart sollte nicht funktionieren, Einsatz ist verbuggt
-
-
 const http = require('http');
 const path = require('path');
 const WebSocket = require('ws');
 const Game = require('./class/game');
 const express = require('express');
-const {v4: uuidv4} = require('uuid');
+const {v4: uuidv4, validate} = require('uuid');
 const logger = require('./logger/logger');
 require('dotenv').config();
 
@@ -45,7 +40,6 @@ const wss = new WebSocket.Server({server});
 wss.on('connection', (ws) => {
 
     ws.on('message', (message) => {
-        console.log(message);
         try {
             let data;
             try {
@@ -57,8 +51,7 @@ wss.on('connection', (ws) => {
                 const id = uuidv4();
                 Game.users.set(id, {ws, name: null});
                 ws.send(JSON.stringify({type: 'id', id: id}));
-                //logger.log("Server.js: Nutzer beigetreten, called data.type === getId" + id.toString());
-                console.log("Nutzer beigetreten: " + id);
+                logger.info("Server.js: Nutzer beigetreten. id: " + id.toString());
 
             } else if(data.type === 'leave') {
                 ws.send(JSON.stringify({type: 'replace', path: `/`}));
@@ -85,7 +78,7 @@ wss.on('connection', (ws) => {
                     return;
                 }
 
-                // If all checks pass, start the game
+                // If all guard clauses pass, start the game.
                 game.start();
                 logger.info('Server.js: Spiel gestartet in Lobby: ' + lobby);
                 game.sendMessageToLobby(JSON.stringify({type: 'replace', path: `/game/${lobby}`}));
@@ -149,7 +142,9 @@ wss.on('connection', (ws) => {
 
                 // Schritt 1: Validierung
                 // Ist der Absender der Host und ist der kickIndex gültig?
-                if (game.getHostId() === data.id && game.players[data.kickIndex]) {
+                if(validateHostPlayer(game.getHostId(), data.id) &&
+                    game.players[data.kickIndex]
+                ) {
                     
                     // Schritt 2: Aktion & Benachrichtigung des gekickten Spielers
                     const kickedPlayer = game.players[data.kickIndex];
@@ -220,6 +215,13 @@ wss.on('connection', (ws) => {
 
 
 });
+
+function validateHostPlayer(host, playerToBeVerifyed){
+    if(host === playerToBeVerifyed) {
+        return true
+    }
+    return false
+}
 
 
 /**
