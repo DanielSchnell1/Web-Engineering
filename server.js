@@ -20,9 +20,11 @@ const app = express();
 const server = http.createServer(app);
 
 app.use(express.static(path.join(__dirname, 'public')));
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/html', 'index.html'));
 });
+
 app.get('/:html/:lobbyId', (req, res) => {
     if (!games.has(req.params.lobbyId)) {
         res.status(404).send('Lobby nicht gefunden');
@@ -34,188 +36,189 @@ app.use((req, res) => {
     res.status(404).send('Nicht gefunden');
 });
 
-
 const wss = new WebSocket.Server({server});
 
-wss.on('connection', (ws) => {
+const messageHandlers = {
+    // Verbindung und Initialisierung
+    'getId': handleGetId,
+    'init': handleInit,
+    'ws': handleWsReconnect,
 
+    // Lobby-Management
+    'getLobbyState': handleGetLobbyState,
+    'kickPlayer': handleKickPlayer,
+    'leave': handleLeave,
+
+    // Spiel-Aktionen
+    'startGame': handleStartGame,
+    'getGameState': handleGetGameState,
+    'draw': handleDraw,
+    'bet': handleBet,
+};
+
+//Dispatch Logic. calling coresponding funkton for ws message type.
+wss.on('connection', (ws) => {
     ws.on('message', (message) => {
         try {
-            let data;
-            try {
-                data = JSON.parse(message);
-            } catch {
+            let data= JSON.parse(message);
+            const handler = messageHandlers[data.type];
+            if (handler) {
+                handler(ws, data);
+            }else {
+                logger.error("Unbekannte Nachritentyp: " + data.type)
+            }
+
+        } catch (e){
+            logger.error(e);
+            ws.send(JSON.stringify({type: 'error', message: 'Ungültige Nachricht'}))
+        }
+    });
+})
+
+// --- Handler-Funktionen ---
+function handleGetId(ws, data) {
+    const id = uuidv4();
+    Game.users.set(id, {ws, name: null});
+    ws.send(JSON.stringify({type: 'id', id: id}));
+    logger.info("Server.js: Nutzer beigetreten. id: " + id.toString());
+}
+
+function handleInit(ws, data) {
+    deleteUserFromGame(data.id);
+    if (data.name && Game.users.has(data.id)) {
+        user = Game.users.get(data.id);
+        user.name = data.name;
+        if (games.has(data.lobby)) { //Fall 1: Nutzer schickt validen Lobbycode
+            let game = games.get(data.lobby);
+            Game.users.set(data.id, user);
+            if (!game.addPlayer(data.id, user.name)) {
+                ws.send(JSON.stringify({type: 'lobbyFull'}));
                 return;
             }
-            if (data.type === 'getId') {
-                const id = uuidv4();
-                Game.users.set(id, {ws, name: null});
-                ws.send(JSON.stringify({type: 'id', id: id}));
-                logger.info("Server.js: Nutzer beigetreten. id: " + id.toString());
+            ws.send(JSON.stringify({type: 'redirect', path: `lobby/${data.lobby}`}));
+            //update an die Lobby mit neuem Spieler
+            sendLobbyStateUpdate(game, data.lobby);
+            console.log(games.get(data.lobby).getPlayerNames(Game.users));
 
-            } else if(data.type === 'leave') {
-                ws.send(JSON.stringify({type: 'replace', path: `/`}));
-                deleteUserFromGame(data.id);
+        } else if (!data.lobby) {    //Fall 2: Nutzer schickt kein Lobbycode
+            Game.users.set(data.id, user);
+            let lobby = generateLobbyCode();
+            console.log(lobby);
+            games.set(lobby, new Game(data.id, user.name));
+            ws.send(JSON.stringify({type: 'getLobby', lobby: lobby}));
+            ws.send(JSON.stringify({type: 'redirect', path: `lobby/${lobby}`}));
+            sendLobbyStateUpdate(games.get(lobby), lobby);
 
-            } else if (data.type === 'startGame') {
-                const lobby = getLobby(data.id);
-                if (!lobby) {
-                    ws.send(JSON.stringify({type: 'error', message: 'Fehler: Lobby existiert nicht'}))
-                    return;
-                }
-
-                const game = games.get(lobby);
-
-                // Check 1: Is the person starting the game the host (player 0)?
-                if (game.getHostId() !== data.id) {
-                    ws.send(JSON.stringify({type: 'error', message: 'Fehler: Nur der Host kann das Spiel starten.'}));
-                    return;
-                }
-
-                // Check 2: Is there more than one player?
-                if (game.playersLength() < 2) {
-                    ws.send(JSON.stringify({type: 'error', message: 'Nicht genügend Spieler in der Lobby.'}));
-                    return;
-                }
-
-                // If all guard clauses pass, start the game.
-                game.start();
-                logger.info('Server.js: Spiel gestartet in Lobby: ' + lobby);
-                game.sendMessageToLobby(JSON.stringify({type: 'replace', path: `/game/${lobby}`}));
-                
-
-            } else if (data.type === 'init') { // Erstelle Lobby oder trete bestehender bei
-                deleteUserFromGame(data.id);
-                if (data.name && Game.users.has(data.id)) {
-                    user = Game.users.get(data.id);
-                    user.name = data.name;
-                    if (games.has(data.lobby)) { //Fall 1: Nutzer schickt validen Lobbycode
-                        let game = games.get(data.lobby);
-                        Game.users.set(data.id, user);
-                        if (!game.addPlayer(data.id, user.name)) {
-                            ws.send(JSON.stringify({type: 'lobbyFull'}));
-                            return;
-                        }
-                        ws.send(JSON.stringify({type: 'redirect', path: `lobby/${data.lobby}`}));
-                        //update an die Lobby mit neuem Spieler
-                        sendLobbyStateUpdate(game, data.lobby);
-                        console.log(games.get(data.lobby).getPlayerNames(Game.users));
-
-                    } else if (!data.lobby) {    //Fall 2: Nutzer schickt kein Lobbycode
-                        Game.users.set(data.id, user);
-                        let lobby = generateLobbyCode();
-                        console.log(lobby);
-                        games.set(lobby, new Game(data.id, user.name));
-                        ws.send(JSON.stringify({type: 'getLobby', lobby: lobby}));
-                        ws.send(JSON.stringify({type: 'redirect', path: `lobby/${lobby}`}));
-                        sendLobbyStateUpdate(games.get(lobby), lobby);
-
-                    } else {                    //Fall 3: Nutzer schickt invaliden Lobbycode
-                        ws.send(JSON.stringify({type: 'error', message: 'Fehler: Lobby existiert nicht'}))
-                    }
-                } else {
-                    ws.send(JSON.stringify({type: 'error', message: 'Fehler: Kein Benutzername'}))
-                }
-
-            } else if (data.type === 'ws') {
-                if (Game.users.has(data.id)) {
-                    let user = Game.users.get(data.id);
-                    user.ws = ws;
-                    Game.users.set(data.id, user);
-                }
-
-
-            } else if (data.type === 'getLobbyState') {
-                const lobby = getLobby(data.id);
-                if (lobby) {
-                    sendLobbyStateUpdate(games.get(lobby), lobby);
-                } else {
-                    ws.send(JSON.stringify({type: 'error', message: 'Lobby nicht gefunden.'}));
-                }
-
-
-            } else if (data.type === 'kickPlayer') {
-                const lobby = getLobby(data.id);
-                if (!lobby) return; // Lobby nicht gefunden
-
-                const game = games.get(lobby);
-
-                // Schritt 1: Validierung
-                // Ist der Absender der Host und ist der kickIndex gültig?
-                if(validateHostPlayer(game.getHostId(), data.id) &&
-                    game.players[data.kickIndex]
-                ) {
-                    
-                    // Schritt 2: Aktion & Benachrichtigung des gekickten Spielers
-                    const kickedPlayer = game.players[data.kickIndex];
-                    if(kickedPlayer.id === data.id) return; // Host kann sich nicht selbst kicken
-
-                    const kickedUser = Game.users.get(kickedPlayer.id);
-                    if (kickedUser && kickedUser.ws) {
-                        // Sende eine Nachricht an den gekickten Spieler, um ihn zum Hauptmenü weiterzuleiten
-                        kickedUser.ws.send(JSON.stringify({ type: 'replace', path: '/' }));
-                    }
-
-                    // Spieler aus dem Array entfernen
-                    game.players.splice(data.kickIndex, 1);
-
-                    // Schritt 3: Update an den Rest der Lobby
-                    sendLobbyStateUpdate(game, lobby);
-                }
-
-
-            } else if (data.type === 'draw') {
-                let game = games.get(data.lobby);
-                let message = game.drawCards(data.id, data.cards);
-                ws.send(message);
-                game.sendMessageToLobby(JSON.stringify({
-                    "type": "pulse",
-                    "cards": data.cards,
-                    "currentPlayer": game.getCurrentPlayer(),
-                    "currentRound": game.getRoundName(game.currentRound)
-                }));
-
-            } else if (data.type === 'bet') {
-                let game = games.get(data.lobby);
-                game.bet(data.id, data.bet, data.fold);
-
-            } else if (data.type === 'getGameState') {
-                let message = games.get(data.lobby).getGameState(data.id);
-                ws.send(message);
-             }
-
-
-        } catch (e) {
-            console.log(e)
+        } else {                    //Fall 3: Nutzer schickt invaliden Lobbycode
+            ws.send(JSON.stringify({type: 'error', message: 'Fehler: Lobby existiert nicht'}))
         }
-    });
+    } else {
+        ws.send(JSON.stringify({type: 'error', message: 'Fehler: Kein Benutzername'}))
+    }
+}
+function handleWsReconnect(ws, data) {
+    if (Game.users.has(data.id)) {
+        let user = Game.users.get(data.id);
+        user.ws = ws;
+        Game.users.set(data.id, user);
+    }
+}
 
+function handleGetLobbyState(ws, data) {
+    const lobby = getLobby(data.id);
+    if (lobby) {
+        sendLobbyStateUpdate(games.get(lobby), lobby);
+    } else {
+        ws.send(JSON.stringify({type: 'error', message: 'Lobby nicht gefunden.'}));
+    }
+}
 
-    ws.on('close', () => { // Wird die Verbindung getrennt, so hat der Nutzer 3 Sekunden Zeit um sich neu zu verbinden, sonst wird er gelöscht
-        let userId;
+function handleKickPlayer(ws, data) {
+    const lobby = getLobby(data.id);
+    if (!lobby) return; // Lobby nicht gefunden
 
-        for (const [id, user] of Game.users.entries()) {
-            if (user.ws === ws) {
-                userId = id;
-                break;
-            }
+    const game = games.get(lobby);
+
+    // Schritt 1: Validierung
+    // Ist der Absender der Host und ist der kickIndex gültig?
+    if(validateHostPlayer(game.getHostId(), data.id) &&
+        game.players[data.kickIndex]
+    ) {
+
+        // Schritt 2: Aktion & Benachrichtigung des gekickten Spielers
+        const kickedPlayer = game.players[data.kickIndex];
+        if(kickedPlayer.id === data.id) return; // Host kann sich nicht selbst kicken
+
+        const kickedUser = Game.users.get(kickedPlayer.id);
+        if (kickedUser && kickedUser.ws) {
+            // Sende eine Nachricht an den gekickten Spieler, um ihn zum Hauptmenü weiterzuleiten
+            kickedUser.ws.send(JSON.stringify({ type: 'replace', path: '/' }));
         }
 
-        if (userId) {
-            setTimeout(() => {
-                const user = Game.users.get(userId);
-                if (!user || user.ws.readyState !== WebSocket.OPEN) {
-                    Game.users.delete(userId);
-                    deleteUserFromGame(userId);
-                    console.log("User durch Close gelöscht:", userId);
-                }
-            }, 3000);
-        }
-    });
+        // Spieler aus dem Array entfernen
+        game.players.splice(data.kickIndex, 1);
+
+        // Schritt 3: Update an den Rest der Lobby
+        sendLobbyStateUpdate(game, lobby);
+    }
+}
+
+function handleLeave(ws, data) {
+    ws.send(JSON.stringify({type: 'replace', path: `/`}));
+    deleteUserFromGame(data.id);
+}
+
+function handleStartGame(ws, data) {
+    const lobby = getLobby(data.id);
+    if (!lobby) {
+        ws.send(JSON.stringify({type: 'error', message: 'Fehler: Lobby existiert nicht'}))
+        return;
+    }
+
+    const game = games.get(lobby);
+
+    // Check 1: Is the person starting the game the host (player 0)?
+    if (game.getHostId() !== data.id) {
+        ws.send(JSON.stringify({type: 'error', message: 'Fehler: Nur der Host kann das Spiel starten.'}));
+        return;
+    }
+
+    // Check 2: Is there more than one player?
+    if (game.playersLength() < 2) {
+        ws.send(JSON.stringify({type: 'error', message: 'Nicht genügend Spieler in der Lobby.'}));
+        return;
+    }
+
+    // If all guard clauses pass, start the game.
+    game.start();
+    logger.info('Server.js: Spiel gestartet in Lobby: ' + lobby);
+    game.sendMessageToLobby(JSON.stringify({type: 'replace', path: `/game/${lobby}`}));
+}
+
+function handleGetGameState(ws, data) {
+    let message = games.get(data.lobby).getGameState(data.id);
+    ws.send(message);
+}
+
+function handleDraw(ws, data) {
+    let game = games.get(data.lobby);
+    let message = game.drawCards(data.id, data.cards);
+    ws.send(message);
+    game.sendMessageToLobby(JSON.stringify({
+        "type": "pulse",
+        "cards": data.cards,
+        "currentPlayer": game.getCurrentPlayer(),
+        "currentRound": game.getRoundName(game.currentRound)
+    }));
+}
+
+function handleBet(ws, data) {
+    let game = games.get(data.lobby);
+    game.bet(data.id, data.bet, data.fold);
+}
 
 
-});
-
+// --- Hilfsfunktionen ---
 function validateHostPlayer(host, playerToBeVerifyed){
     if(host === playerToBeVerifyed) {
         return true
