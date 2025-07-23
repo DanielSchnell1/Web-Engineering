@@ -507,7 +507,7 @@ class Game {
                 "cardScore": player.cardScore
             });
 
-            logger.info("game.js: Started game state generation. Assigned cards for player");
+            logger.info("game.js: Assigned cards for player" + player.name);
         });
         console.log("getGameState:" + JSON.stringify(data));
         return JSON.stringify(data);

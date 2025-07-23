@@ -39,7 +39,7 @@ app.use((req, res) => {
 const wss = new WebSocket.Server({server});
 
 const messageHandlers = {
-    // Verbindung und Initialisierung
+    // Connection and Initialisierung
     'getId': handleGetId,
     'init': handleInit,
     'ws': handleWsReconnect,
@@ -49,14 +49,14 @@ const messageHandlers = {
     'kickPlayer': handleKickPlayer,
     'leave': handleLeave,
 
-    // Spiel-Aktionen
+    // Game Actions
     'startGame': handleStartGame,
     'getGameState': handleGetGameState,
     'draw': handleDraw,
     'bet': handleBet,
 };
 
-//Dispatch Logic. calling coresponding funkton for ws message type.
+//Central-Dispatch-Logic: calling coresponding function for ws message type.
 wss.on('connection', (ws) => {
     ws.on('message', (message) => {
         try {
@@ -65,17 +65,23 @@ wss.on('connection', (ws) => {
             if (handler) {
                 handler(ws, data);
             }else {
-                logger.error("Unbekannte Nachritentyp: " + data.type)
+                logger.error("Server.js: Unbekannte Nachritentyp: " + data.type)
             }
 
         } catch (e){
             logger.error(e);
-            ws.send(JSON.stringify({type: 'error', message: 'Ungültige Nachricht'}))
+            ws.send(JSON.stringify({type: 'error', message: 'Server.js: Ungültige Nachricht'}))
         }
     });
 })
 
 // --- Handler-Funktionen ---
+/**
+ * Handles the 'getId' message. Generates a new UUID for a connecting user,
+ * stores them in `Game.users`, and sends the new ID back to the client.
+ * @param {WebSocket} ws The WebSocket connection object of the client.
+ * @param {object} data The parsed message object from the client.
+ */
 function handleGetId(ws, data) {
     const id = uuidv4();
     Game.users.set(id, {ws, name: null});
@@ -83,6 +89,15 @@ function handleGetId(ws, data) {
     logger.info("Server.js: Nutzer beigetreten. id: " + id.toString());
 }
 
+/**
+ * Handles the 'init' message. Initializes a user's session by setting their name
+ * and adding them to a lobby. It can either create a new lobby or add the user to an existing one.
+ * @param {WebSocket} ws The WebSocket connection object of the client.
+ * @param {object} data The parsed message object from the client.
+ * @param {string} data.id The client's unique ID.
+ * @param {string} data.name The client's chosen name.
+ * @param {string} [data.lobby] The optional lobby code to join.
+ */
 function handleInit(ws, data) {
     deleteUserFromGame(data.id);
     if (data.name && Game.users.has(data.id)) {
@@ -98,7 +113,8 @@ function handleInit(ws, data) {
             ws.send(JSON.stringify({type: 'redirect', path: `lobby/${data.lobby}`}));
             //update an die Lobby mit neuem Spieler
             sendLobbyStateUpdate(game, data.lobby);
-            console.log(games.get(data.lobby).getPlayerNames(Game.users));
+            logger.info("Server.js: Nutzer in Lobby: " + games.get(data.lobby).getPlayerNames(Game.users));
+            //console.log(games.get(data.lobby).getPlayerNames(Game.users));
 
         } else if (!data.lobby) {    //Fall 2: Nutzer schickt kein Lobbycode
             Game.users.set(data.id, user);
@@ -116,6 +132,14 @@ function handleInit(ws, data) {
         ws.send(JSON.stringify({type: 'error', message: 'Fehler: Kein Benutzername'}))
     }
 }
+
+/**
+ * Handles the 'ws' message. Re-associates a new WebSocket connection with an
+ * existing user ID. This is for handling page reloads or brief disconnects.
+ * @param {WebSocket} ws The new WebSocket connection object of the client.
+ * @param {object} data The parsed message object from the client.
+ * @param {string} data.id The client's existing unique ID.
+ */
 function handleWsReconnect(ws, data) {
     if (Game.users.has(data.id)) {
         let user = Game.users.get(data.id);
@@ -124,6 +148,13 @@ function handleWsReconnect(ws, data) {
     }
 }
 
+/**
+ * Handles the 'getLobbyState' message. Retrieves the current state of the
+ * lobby the user is in and sends it back to the client.
+ * @param {WebSocket} ws The WebSocket connection object of the client.
+ * @param {object} data The parsed message object from the client.
+ * @param {string} data.id The client's unique ID.
+ */
 function handleGetLobbyState(ws, data) {
     const lobby = getLobby(data.id);
     if (lobby) {
@@ -133,21 +164,27 @@ function handleGetLobbyState(ws, data) {
     }
 }
 
+/**
+ * Handles the 'kickPlayer' message. Allows a host to remove another player from the lobby.
+ * @param {WebSocket} ws The WebSocket connection object of the host client.
+ * @param {object} data The parsed message object from the client.
+ * @param {string} data.id The host's unique ID.
+ * @param {number} data.kickIndex The index of the player to be kicked in the `game.players` array.
+ */
 function handleKickPlayer(ws, data) {
     const lobby = getLobby(data.id);
     if (!lobby) return; // Lobby nicht gefunden
 
     const game = games.get(lobby);
 
-    // Schritt 1: Validierung
-    // Ist der Absender der Host und ist der kickIndex gültig?
+    // Schritt 1: Validierung Host
     if(validateHostPlayer(game.getHostId(), data.id) &&
         game.players[data.kickIndex]
     ) {
 
         // Schritt 2: Aktion & Benachrichtigung des gekickten Spielers
         const kickedPlayer = game.players[data.kickIndex];
-        if(kickedPlayer.id === data.id) return; // Host kann sich nicht selbst kicken
+        if(kickedPlayer.id === data.id) return;
 
         const kickedUser = Game.users.get(kickedPlayer.id);
         if (kickedUser && kickedUser.ws) {
@@ -163,11 +200,25 @@ function handleKickPlayer(ws, data) {
     }
 }
 
+/**
+ * Handles the 'leave' message. Removes a user from their game/lobby
+ * and redirects them to the homepage.
+ * @param {WebSocket} ws The WebSocket connection object of the client.
+ * @param {object} data The parsed message object from the client.
+ * @param {string} data.id The client's unique ID.
+ */
 function handleLeave(ws, data) {
     ws.send(JSON.stringify({type: 'replace', path: `/`}));
     deleteUserFromGame(data.id);
 }
 
+/**
+ * Handles the 'startGame' message. Starts the game if the sender
+ * is the host and there are enough players.
+ * @param {WebSocket} ws The WebSocket connection object of the client.
+ * @param {object} data The parsed message object from the client.
+ * @param {string} data.id The client's unique ID, used to verify they are the host.
+ */
 function handleStartGame(ws, data) {
     const lobby = getLobby(data.id);
     if (!lobby) {
@@ -195,11 +246,27 @@ function handleStartGame(ws, data) {
     game.sendMessageToLobby(JSON.stringify({type: 'replace', path: `/game/${lobby}`}));
 }
 
+/**
+ * Handles the 'getGameState' message. Fetches the current game state
+ * for the specific user and sends it to them.
+ * @param {WebSocket} ws The WebSocket connection object of the client.
+ * @param {object} data The parsed message object from the client.
+ * @param {string} data.id The client's unique ID.
+ * @param {string} data.lobby The lobby code for the game.
+ */
 function handleGetGameState(ws, data) {
     let message = games.get(data.lobby).getGameState(data.id);
     ws.send(message);
 }
 
+/**
+ * Handles the 'draw' message. Processes a player's request to exchange cards during the draw round.
+ * @param {WebSocket} ws The WebSocket connection object of the client.
+ * @param {object} data The parsed message object from the client.
+ * @param {string} data.id The client's unique ID.
+ * @param {string} data.lobby The lobby code for the game.
+ * @param {string[]} data.cards An array of card identifiers to be exchanged.
+ */
 function handleDraw(ws, data) {
     let game = games.get(data.lobby);
     let message = game.drawCards(data.id, data.cards);
@@ -212,6 +279,15 @@ function handleDraw(ws, data) {
     }));
 }
 
+/**
+ * Handles the 'bet' message. Processes a player's bet or fold action.
+ * @param {WebSocket} ws The WebSocket connection object of the client.
+ * @param {object} data The parsed message object from the client.
+ * @param {string} data.id The client's unique ID.
+ * @param {string} data.lobby The lobby code for the game.
+ * @param {number} data.bet The amount the player is betting.
+ * @param {boolean} data.fold True if the player is folding.
+ */
 function handleBet(ws, data) {
     let game = games.get(data.lobby);
     game.bet(data.id, data.bet, data.fold);
@@ -219,6 +295,12 @@ function handleBet(ws, data) {
 
 
 // --- Hilfsfunktionen ---
+/**
+ * A helper function to check if a given player ID matches the host's ID.
+ * @param {string} host The ID of the host.
+ * @param {string} playerToBeVerified The ID of the player to check.
+ * @returns {boolean} True if the player is the host, otherwise false.
+ */
 function validateHostPlayer(host, playerToBeVerifyed){
     if(host === playerToBeVerifyed) {
         return true
@@ -241,6 +323,11 @@ function logUsers() {
     console.log('----------------------------');
 }
 
+/**
+ * Sends the updated lobby state to all players in a game.
+ * @param {Game} game The game instance.
+ * @param {string} lobby The lobby code.
+ */
 function sendLobbyStateUpdate(game, lobby) {
     game.players.forEach(player => {
         const user = Game.users.get(player.id);

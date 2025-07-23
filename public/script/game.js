@@ -13,6 +13,7 @@ const drawButton = document.getElementById("drawButton");
  * This function is the central point for updating the game state on the client side.
  * @param {MessageEvent} event - The event object containing the message data from the server.
  */
+
 ws.addEventListener('message', (event) => {
     let data = JSON.parse(event.data);
     console.log(data);
