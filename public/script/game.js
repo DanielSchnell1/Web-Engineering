@@ -104,7 +104,6 @@ ws.addEventListener('message', (event) => {
                 <div class="playerCards">
                 ${player.cards.map(card => `<img src="/img/cards/${card}.svg" alt="${card}" />`).join('')}
                 <div class="playerBalance">${player.balance} Chips</div>
-
               </li>`;
             });
 

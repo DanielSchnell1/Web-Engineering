@@ -13,16 +13,17 @@
 <body>
   <h1>Lobby</h1>
   <div id="lobbyDiv">
-    <input id="code" type="text" value="LOBBYCODE" readonly>
+    <input id="code" type="text" value="LOBBYCODE" readonly aria-label="Lobby ID">
     <ul id="userList"></ul>
-    <input id="start" type="button" value="Spiel starten" style ="display: none;">
+    <input id="start" type="button" value="Spiel starten" style ="display: none;" aria-label="Spiel starten">
   </div>
 
   <dialog id="pokerhands">
   </dialog>
 
   <button class="dialogBtn"
-    onclick="fetch('/html/pokerhands.html').then(r=>r.text()).then(h=>{let d=document.getElementById('pokerhands');d.innerHTML=h;d.showModal();})">
+    onclick="fetch('/html/pokerhands.html').then(r=>r.text()).then(h=>{let d=document.getElementById('pokerhands');d.innerHTML=h;d.showModal();})"
+          aria-label="Pokerhand Kombinationen öffnen">
     <span class="iconify" data-icon="mdi:cards-playing-outline" style="font-size: 26px;"></span>
   </button>
 

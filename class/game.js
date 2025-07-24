@@ -5,13 +5,10 @@ class Game {
 
     static users = new Map();
 
-    //Die erste und die dritte Runde sind Setzrunden
     static betRounds = [0, 2];
 
-    //Die zweite Runde ist eine Tauschrunde
     static drawRounds = [1];
-
-
+    
     /**
      * The sequence of rounds in the game.
      * 0 = Betting round, 1 = Drawing round, 2 = End of game.
@@ -109,7 +106,6 @@ class Game {
         return ['1. Setzrunde', 'Tauschrunde', '2. Setzrunde', 'Showdown'][index];
     }
 
-
     /**
      * Sends a JSON message to all players in a specific lobby.
      * @param {string} JSON - The JSON string message to send to each player.
@@ -194,11 +190,9 @@ class Game {
      * @returns {string|undefined} A JSON string with the player's new cards, or undefined if the move is invalid.
      */
     drawCards(playerId, cardIds) {
-        //Auswahl des Spielers und Validierung des Zugs
         let index = this.players.findIndex(p => p.id === playerId);
         let player = this.players[index];
 
-        //Auswahl was geschieht wenn der Spieler dran oder aktiv ist
         if (!player.active ||
             this.currentPlayer != index ||
             !Game.drawRounds.includes(this.currentRound)) {
@@ -208,16 +202,14 @@ class Game {
 
         cardIds.forEach((cardId) => {
             const cardIndex = parseInt(cardId.match(/^\d+_(\d+)$/)[1], 10);
-            //implementieren von verschieben der Karten in "used Deck"
             player.cards[cardIndex] = this.deck.pop();
         });
-        //Nächster Spieler
+
         this.updateCurrentPlayer();
         logger.info("game.js: switched card of player: " + player.name);
         this.sendCallbackMessageToLobby(this.getMoveStateJSON, [this]);
         return JSON.stringify({type: "drawCards", cards: player.cards});
     }
-
 
     betIsValid(playerId, bet, fold = false, playerIndex) {
         let player = this.players[playerIndex];
@@ -238,7 +230,6 @@ class Game {
         return bet <= player.balance && bet >= this.getCurrentBet();
     }
 
-
     /**
      * Processes a player's bet.
      * @param {string} playerId - The ID of the player.
@@ -250,7 +241,6 @@ class Game {
         let index = this.players.findIndex(p => p.id === playerId);
         let player = this.players[index];
 
-        //Validiere Input
         if (!this.betIsValid(playerId, bet, fold, index)) {
             logger.error(`game.js: Unzulässiger Einsatz: fold: ${fold}, active: ${player.active}, 
                 betDiff: ${bet - player.bet}, currentPlayer: ${this.currentPlayer != index}, balance: ${player.balance}
@@ -258,23 +248,15 @@ class Game {
             return;
         }
 
-
-        //Fall 1: Spieler hat gefoldet und ist daher nicht mehr aktiv
         if (fold) {
-            player.active = false;
-            this.updateCurrentPlayer();
-            this.sendCallbackMessageToLobby(this.getGameState);
-            logger.info("Game.js: Fold");
-            return;
+            this.setFold();
         }
-
         player.bet = bet;
         this.updateCurrentPlayer();
 
-
         logger.info("Game.js: Spiel ende nicht identifiziert. Aktualisieren der Lobby ");
         this.sendCallbackMessageToLobby((userId) => {
-            return JSON.stringify({ // type ist ein empty String, da die untenstehenden Variablen jedesmal aktualisiert werden.
+            return JSON.stringify({
                 "type": "",
                 "currentPlayer": this.getCurrentPlayer(),
                 "currentBet": this.getCurrentBet(),
@@ -284,6 +266,14 @@ class Game {
             })
         });
         this.sendCallbackMessageToLobby(this.getMoveStateJSON, [this]);
+    }
+
+    setFold(){
+        player.active = false;
+        this.updateCurrentPlayer();
+        this.sendCallbackMessageToLobby(this.getGameState);
+        logger.info("Game.js: Fold");
+        return;
     }
 
     /**
@@ -304,7 +294,6 @@ class Game {
         do {
             this.currentPlayer = (this.currentPlayer + 1) % this.players.length;
         } while (!this.players[this.currentPlayer].active || this.players[this.currentPlayer].leaveGame);
-
 
         //beendet die Tausch/Setzrunde erst, wenn Alle Einsätze gleich sind. Oder wenn der erste Spieler dran ist (bei Tauschrunden)
         if (
@@ -561,8 +550,6 @@ class Game {
         for (const value of cardValues) {
             countMap[value] = (countMap[value] || 0) + 1;
         }
-
-        //sorting found values as key value pairs
         return Object.values(countMap).sort((a, b) => b - a);
     }
 
@@ -577,7 +564,6 @@ class Game {
         for (const type of cardTypes) {
             countMap[type] = (countMap[type] || 0) + 1;
         }
-
         return Object.values(countMap).sort((a, b) => b - a);
     }
 
@@ -615,9 +601,7 @@ class Game {
 
             //check for special case wheel: A,2,3,4,5, if Ass is in hand
             if (sortedCardValues.includes(14) && testedForStraight === false) {
-                //new car set: Ass is mapped in new Array as one
                 const sortedCardValuesSpecial = sortedCardValues.map(card => card === 14 ? 1 : card);
-                //sorting new Array as normal
                 sortedCardValuesSpecial.sort((a, b) => b - a);
                 testedForStraight = testStraight(sortedCardValuesSpecial, sortedCardValuesSpecial.length);
             }
@@ -673,31 +657,31 @@ class Game {
             switch (true) {
                 //order of cases is important, switching Pair before Full House leads to wrong result
                 case royalFlush():
-                    handRank = 90000;
+                    handRank = 9;
                     break;
                 case straightFlush():
-                    handRank = 80000;
+                    handRank = 8;
                     break;
                 case fourOfAKind():
-                    handRank = 70000;
+                    handRank = 7;
                     break;
                 case fullHouse():
-                    handRank = 60000;
+                    handRank = 6;
                     break;
                 case flush():
-                    handRank = 50000;
+                    handRank = 5;
                     break;
                 case straight():
-                    handRank = 40000;
+                    handRank = 4;
                     break;
                 case threeOfAKind():
-                    handRank = 30000;
+                    handRank = 3;
                     break;
                 case twoPair():
-                    handRank = 20000;
+                    handRank = 2;
                     break;
                 case pairFunktion():
-                    handRank = 10000;
+                    handRank = 1;
                     break;
                 case highCard():
                     handRank = 0;
@@ -724,7 +708,7 @@ class Game {
 
         cardValue.sort((a, b) => b - a);
 
-        //Creating unique number of card hand to compare with
+        //Creating unique concatinated number to compare card hands
         let stringKonkatCardValue = "";
         for (let i = 0; i < cardValue.length; i++) {
             if (cardValue[i] < 10) {

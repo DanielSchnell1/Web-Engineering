@@ -1,52 +1,60 @@
-<!DOCTYPE html><html lang="de">
+<!DOCTYPE html>
+<html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Poker Game</title>
-  <link rel="stylesheet" href="/css/alwaysactive.css" />
-  <link rel="stylesheet" href="/css/pokerhands.css"/>
-  <link rel="stylesheet" href="/css/game.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=League+Spartan&display=swap" rel="stylesheet" />
-  <link href="/img/icons/tab.png" rel="icon" type="image/x-icon"/>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Poker Game</title>
+    <link rel="stylesheet" href="/css/alwaysactive.css"/>
+    <link rel="stylesheet" href="/css/pokerhands.css"/>
+    <link rel="stylesheet" href="/css/game.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan&display=swap" rel="stylesheet"/>
+    <link href="/img/icons/tab.png" rel="icon" type="image/x-icon"/>
 
 </head>
 <body>
-  <div class="infobar">
+<div class="infobar">
     <div><span id="currentPlayer">aktueller Spieler: ?</span></div>
     <div><span id="currentBet">Einsatz: 0</span></div>
     <div><span id="currentPot">Pot: 0</span></div>
     <div><span id="currentRound">Runde: 1</span></div>
-  </div>
-  <div class="table" id="table">
+</div>
+<div class="table" id="table">
     <div id="players"></div>
     <div id="self"></div>
     <div id="community" class="community-cards"></div>
-  </div>  <div id="controls">
+</div>
+<div id="controls">
     <div>
-      <label class = "bet" for="bet">Einsatz:&nbsp;</label>
-      <span class = "bet" id="betValue">-</span> <span class="bet">&nbsp;Chips&nbsp;</span>
+        <label class="bet" for="bet">Einsatz:&nbsp;</label>
+        <span class="bet" id="betValue">-</span> <span class="bet">&nbsp;Chips&nbsp;</span>
     </div>
-    <input class = "bet" type="range" id="bet" name="bet" min="5" max="100" step="1">
+    <input class="bet" type="range" id="bet" name="bet" min="5" max="100" step="1">
     <br>
     <div>
-      <button class = "bet" id="betButton">Setzen</button>
-      <button id="drawButton">Karten tauschen</button>
-      <button class = "bet redBtn" id="foldButton">Passen</button>  
+        <button class="bet" id="betButton" aria-label="Setzen">Setzen</button>
+        <button id="drawButton" aria-label="Karten Tauschen">Karten tauschen</button>
+        <button class="bet redBtn" id="foldButton" aria-label="Passen">Passen</button>
     </div>
-  </div>  
-  <dialog id="pokerhands">
-  </dialog>
-  <dialog id="leaderboard">
+</div>
+<dialog id="pokerhands">
+</dialog>
+<dialog id="leaderboard" aria-label="Ausgabe der Spielergebnisse">
     <ul>
 
     </ul>
     </div id="leaderboardControls">
-      <button id="leaveBtn" class="redBtn">Verlassen</button>
+    <button id="leaveBtn" class="redBtn" aria-label="Verlassen der Spielergebnisse">Verlassen</button>
     </div>
-  </dialog>
-  
-  <button onclick="fetch('/html/pokerhands.html').then(r=>r.text()).then(h=>{let d=document.getElementById('pokerhands');d.innerHTML=h;d.showModal();})"
-style="bottom: 20px !important; right: 20px !important; position: fixed; width: 40px !important; height: 40px !important; border-radius: 15px; display: flex !important; align-items: center !important; justify-content: center !important;"> <span class="iconify" data-icon="mdi:cards-playing-outline" data-inline="false" style="font-size: 32px;"></span> </button>
+</dialog>
 
-  <script src="https://code.iconify.design/2/2.2.1/iconify.min.js"></script>   <script src="/script/alwaysactive.js"></script>  <script src="/script/game.js"></script></body>
+<button onclick="fetch('/html/pokerhands.html').then(r=>r.text()).then(h=>{let d=document.getElementById('pokerhands');d.innerHTML=h;d.showModal();})"
+        style="bottom: 20px !important; right: 20px !important; position: fixed; width: 40px !important; height: 40px !important; border-radius: 15px; display: flex !important; align-items: center !important; justify-content: center !important;"
+        aria-label="Pokerhand Kombinationen öffnen">
+    <span class="iconify" data-icon="mdi:cards-playing-outline" data-inline="false" style="font-size: 32px;"></span>
+</button>
+
+<script src="https://code.iconify.design/2/2.2.1/iconify.min.js"></script>
+<script src="/script/alwaysactive.js"></script>
+<script src="/script/game.js"></script>
+</body>
 </html>
