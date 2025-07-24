@@ -60,22 +60,22 @@ const messageHandlers = {
 wss.on('connection', (ws) => {
     ws.on('message', (message) => {
         try {
-            let data= JSON.parse(message);
+            let data = JSON.parse(message);
             const handler = messageHandlers[data.type];
             if (handler) {
                 handler(ws, data);
-            }else {
+            } else {
                 logger.error("Server.js: Unbekannte Nachritentyp: " + data.type)
             }
 
-        } catch (e){
+        } catch (e) {
             logger.error(e);
             ws.send(JSON.stringify({type: 'error', message: 'Server.js: Ungültige Nachricht'}))
         }
     });
 })
 
-// --- Handler-Funktionen ---
+// ----- Handler-Funktions -----
 /**
  * Handles the 'getId' message. Generates a new UUID for a connecting user,
  * stores them in `Game.users`, and sends the new ID back to the client.
@@ -99,32 +99,11 @@ function handleGetId(ws, data) {
  * @param {string} [data.lobby] The optional lobby code to join.
  */
 function handleInit(ws, data) {
-    deleteUserFromGame(data.id);
-    if (data.name && Game.users.has(data.id)) {
-        user = Game.users.get(data.id);
-        user.name = data.name;
+    if (identifyUser(data)) {
         if (games.has(data.lobby)) { //Fall 1: Nutzer schickt validen Lobbycode
-            let game = games.get(data.lobby);
-            Game.users.set(data.id, user);
-            if (!game.addPlayer(data.id, user.name)) {
-                ws.send(JSON.stringify({type: 'lobbyFull'}));
-                return;
-            }
-            ws.send(JSON.stringify({type: 'redirect', path: `lobby/${data.lobby}`}));
-            //update an die Lobby mit neuem Spieler
-            sendLobbyStateUpdate(game, data.lobby);
-            logger.info("Server.js: Nutzer in Lobby: " + games.get(data.lobby).getPlayerNames(Game.users));
-            //console.log(games.get(data.lobby).getPlayerNames(Game.users));
-
+            joinLobby(ws, data);
         } else if (!data.lobby) {    //Fall 2: Nutzer schickt kein Lobbycode
-            Game.users.set(data.id, user);
-            let lobby = generateLobbyCode();
-            console.log(lobby);
-            games.set(lobby, new Game(data.id, user.name));
-            ws.send(JSON.stringify({type: 'getLobby', lobby: lobby}));
-            ws.send(JSON.stringify({type: 'redirect', path: `lobby/${lobby}`}));
-            sendLobbyStateUpdate(games.get(lobby), lobby);
-
+            createLobby(ws, data);
         } else {                    //Fall 3: Nutzer schickt invaliden Lobbycode
             ws.send(JSON.stringify({type: 'error', message: 'Fehler: Lobby existiert nicht'}))
         }
@@ -177,25 +156,24 @@ function handleKickPlayer(ws, data) {
 
     const game = games.get(lobby);
 
-    // Schritt 1: Validierung Host
-    if(validateHostPlayer(game.getHostId(), data.id) &&
+    // 1: Validate Host
+    if (validateHostPlayer(game.getHostId(), data.id) &&
         game.players[data.kickIndex]
     ) {
 
-        // Schritt 2: Aktion & Benachrichtigung des gekickten Spielers
+        //2: checking if admin kicks himself. inform kicked Player
         const kickedPlayer = game.players[data.kickIndex];
-        if(kickedPlayer.id === data.id) return;
+        if (kickedPlayer.id === data.id) return;
 
         const kickedUser = Game.users.get(kickedPlayer.id);
         if (kickedUser && kickedUser.ws) {
-            // Sende eine Nachricht an den gekickten Spieler, um ihn zum Hauptmenü weiterzuleiten
-            kickedUser.ws.send(JSON.stringify({ type: 'replace', path: '/' }));
+            kickedUser.ws.send(JSON.stringify({type: 'replace', path: '/'}));
         }
 
-        // Spieler aus dem Array entfernen
+        // deleate player formaly from game
         game.players.splice(data.kickIndex, 1);
 
-        // Schritt 3: Update an den Rest der Lobby
+        // 3: update lobby state
         sendLobbyStateUpdate(game, lobby);
     }
 }
@@ -294,15 +272,15 @@ function handleBet(ws, data) {
 }
 
 
-// --- Hilfsfunktionen ---
+// ----- Helperfunction -----
 /**
  * A helper function to check if a given player ID matches the host's ID.
  * @param {string} host The ID of the host.
  * @param {string} playerToBeVerified The ID of the player to check.
  * @returns {boolean} True if the player is the host, otherwise false.
  */
-function validateHostPlayer(host, playerToBeVerifyed){
-    if(host === playerToBeVerifyed) {
+function validateHostPlayer(host, playerToBeVerifyed) {
+    if (host === playerToBeVerifyed) {
         return true
     }
     return false
@@ -351,13 +329,15 @@ function deleteUserFromGame(userId) {
         for (let i = 0; i < game.players.length; i++) {
             const player = game.players[i];
 
-            if (player.id === userId) { 
-                if(game.playersLength() <= 1) { // Fall 1: Lobby ist (danach) leer und wird gelöscht
+            if (player.id === userId) {
+                // Fall 1: Lobby ist (danach) leer und wird gelöscht
+                if (game.playersLength() <= 1) {
                     games.delete(lobby);
                     return;
                 }
-                if (game.isStarted) { //Fall 2: Spiel ist gestartet -> Spieler beim nächsten Start rauswerfen
-                    if(game.players[game.currentPlayer].id == userId) {
+                //Fall 2: Spiel ist gestartet -> Spieler beim nächsten Start rauswerfen
+                if (game.isStarted) {
+                    if (game.players[game.currentPlayer].id == userId) {
                         game.updateCurrentPlayer();
                     }
                     player.leaveGame = true;
@@ -406,14 +386,70 @@ function generateLobbyCode() {
     return code;
 }
 
+/**
+ * Validates a user by their ID, sets their name, and cleans up any old game sessions.
+ * This function ensures a user is properly registered in the system before they proceed to create or join a lobby.
+ * @param {object} data - The data object received from the client.
+ * @param {string} data.id - The user's unique identifier (UUID).
+ * @param {string} data.name - The user's chosen display name.
+ * @returns {boolean} Returns `true` if the user is successfully identified and their name is set, otherwise `false`.
+ */
+function identifyUser(data) {
+    deleteUserFromGame(data.id);
+    if (data.name && Game.users.has(data.id)) {
+        user = Game.users.get(data.id);
+        user.name = data.name;
+        return true;
+    }
+    return false;
+}
 
-// Server starten
+/**
+ * Creates a new game lobby with a unique code.
+ * The user who initiates the creation becomes the host of the new lobby.
+ * It sends the new lobby code and a redirect instruction back to the client.
+ * @param {WebSocket} ws - The WebSocket connection object of the client creating the lobby.
+ * @param {object} data - The data object from the client, containing user information.
+ * @param {string} data.id - The unique ID of the user creating the lobby.
+ */
+function createLobby(ws, data) {
+    Game.users.set(data.id, user);
+    let lobby = generateLobbyCode();
+    console.log(lobby);
+    games.set(lobby, new Game(data.id, user.name));
+    ws.send(JSON.stringify({type: 'getLobby', lobby: lobby}));
+    ws.send(JSON.stringify({type: 'redirect', path: `lobby/${lobby}`}));
+    sendLobbyStateUpdate(games.get(lobby), lobby);
+}
+
+/**
+ * Adds a player to an existing game lobby.
+ * If the lobby is full, it sends a 'lobbyFull' message. Otherwise, it adds the player
+ * and notifies all clients in the lobby about the new player.
+ * @param {WebSocket} ws - The WebSocket connection object of the joining client.
+ * @param {object} data - The data object from the client.
+ * @param {string} data.id - The unique ID of the joining user.
+ * @param {string} data.lobby - The lobby code the user wants to join.
+ */
+function joinLobby(ws, data) {
+    let game = games.get(data.lobby);
+    Game.users.set(data.id, user);
+    if (!game.addPlayer(data.id, user.name)) {
+        ws.send(JSON.stringify({type: 'lobbyFull'}));
+        return;
+    }
+    ws.send(JSON.stringify({type: 'redirect', path: `lobby/${data.lobby}`}));
+    sendLobbyStateUpdate(game, data.lobby);
+    logger.info("Server.js: Nutzer in Lobby: " + games.get(data.lobby).getPlayerNames(Game.users));
+}
+
+
+//----- Server Stuff -----
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server läuft auf http://localhost:${PORT}`);
 });
 
-//Server herunterfahren
 // Shutdown-Signale abfangen: STRG+C oder Kill-Befehl
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
@@ -426,7 +462,6 @@ process.on('SIGTERM', shutdown);
 function shutdown() {
     console.log('\n🛑 Server wird heruntergefahren...');
 
-    // 1. HTTP-Server stoppen - nimmt keine neuen Verbindungen mehr an
     server.close(() => {
         console.log('📴 HTTP-Server wurde geschlossen.');
     });
