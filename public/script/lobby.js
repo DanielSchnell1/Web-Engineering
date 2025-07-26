@@ -39,26 +39,27 @@ document.getElementById('userList').addEventListener('click', (event) => {
     }
 });
 ws.addEventListener('open', () => {
-  ws.send(JSON.stringify({ type: 'getLobbyState', id: id }));
+    ws.send(JSON.stringify({type: 'getLobbyState', id: id}));
 });
 
-ws.addEventListener('', () => {})
+ws.addEventListener('', () => {
+})
 start = document.getElementById("start");
 
 start.addEventListener('click', () => {
-  ws.send(JSON.stringify({ type: 'startGame', id: id }));
+    ws.send(JSON.stringify({type: 'startGame', id: id}));
 });
 
 
 console.log("start");
 
 document.getElementById('start').addEventListener('click', () => {
-  console.log("start");
+    console.log("start");
 })
 
 document.getElementById('userList').addEventListener('click', () => {
-  data = JSON.parse(event.data);
-  
+    data = JSON.parse(event.data);
+
 
 })
 

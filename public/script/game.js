@@ -166,8 +166,8 @@ ws.addEventListener('message', (event) => {
                 let cardsDiv = document.getElementById(`cards${index}`);
                 const src = `/img/cards/${card}.svg`
                 const img = document.createElement('img');
-                if(data.self == index) {
-                    img.tabIndex="0";
+                if (data.self == index) {
+                    img.tabIndex = "0";
                 }
                 img.src = src;
                 img.alt = card;

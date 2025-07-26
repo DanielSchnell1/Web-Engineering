@@ -97,16 +97,16 @@ describe('Game evaluateHand', () => {
     });
 
     const testCases = [
-        { name: "Royal Flush", hand: ["herz 10", "herz bube", "herz dame", "herz koenig", "herz ass"], expectedRank: 90000 },
-        { name: "Straight Flush", hand: ["herz 10", "herz 9", "herz 8", "herz 7", "herz 6"], expectedRank: 80000 },
-        { name: "Four of a Kind", hand: ["herz 2", "karo 2", "pik 2", "kreuz 2", "pik 6"], expectedRank: 70000 },
-        { name: "Full House", hand: ["kreuz 2", "herz 2", "pik 2", "herz 3", "karo 3"], expectedRank: 60000 },
-        { name: "Flush", hand: ["herz 2", "herz ass", "herz 4", "herz 5", "herz 9"], expectedRank: 50000 },
-        { name: "Straight", hand: ["herz 2", "karo 3", "pik 4", "kreuz 5", "herz 6"], expectedRank: 40000 },
-        { name: "Straight (Wheel)", hand: ["karo 2", "herz 3", "pik 4", "kreuz 5", "herz ass"], expectedRank: 40000 },
-        { name: "Three of a Kind", hand: ["herz bube", "karo 4", "kreuz 6", "pik 6", "herz 6"], expectedRank: 30000 },
-        { name: "Two Pair", hand: ["herz 2", "karo 4", "pik 4", "kreuz 6", "herz 6"], expectedRank: 20000 },
-        { name: "Pair", hand: ["kreuz 2", "herz 3", "pik 4", "karo 4", "herz 6"], expectedRank: 10000 },
+        { name: "Royal Flush", hand: ["herz 10", "herz bube", "herz dame", "herz koenig", "herz ass"], expectedRank: 9 },
+        { name: "Straight Flush", hand: ["herz 10", "herz 9", "herz 8", "herz 7", "herz 6"], expectedRank: 8 },
+        { name: "Four of a Kind", hand: ["herz 2", "karo 2", "pik 2", "kreuz 2", "pik 6"], expectedRank: 7 },
+        { name: "Full House", hand: ["kreuz 2", "herz 2", "pik 2", "herz 3", "karo 3"], expectedRank: 6 },
+        { name: "Flush", hand: ["herz 2", "herz ass", "herz 4", "herz 5", "herz 9"], expectedRank: 5 },
+        { name: "Straight", hand: ["herz 2", "karo 3", "pik 4", "kreuz 5", "herz 6"], expectedRank: 4 },
+        { name: "Straight (Wheel)", hand: ["karo 2", "herz 3", "pik 4", "kreuz 5", "herz ass"], expectedRank: 4 },
+        { name: "Three of a Kind", hand: ["herz bube", "karo 4", "kreuz 6", "pik 6", "herz 6"], expectedRank: 3 },
+        { name: "Two Pair", hand: ["herz 2", "karo 4", "pik 4", "kreuz 6", "herz 6"], expectedRank: 2 },
+        { name: "Pair", hand: ["kreuz 2", "herz 3", "pik 4", "karo 4", "herz 6"], expectedRank: 1 },
         { name: "High Card", hand: ["herz 2", "karo 5", "pik 4", "kreuz ass", "herz 10"], expectedRank: 0 }
     ];
 

@@ -3,8 +3,7 @@ let id = sessionStorage.getItem('id');
 let lobby = sessionStorage.getItem('lobby');
 
 ws.onopen = () => {
-    if(!id)
-    {
+    if (!id) {
         ws.send(JSON.stringify({
             type: 'getId'
         }));
@@ -19,18 +18,13 @@ ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
     if (data.type === 'id') {
         sessionStorage.setItem('id', data.id);
-    }
-    else if (data.type === 'error') {
+    } else if (data.type === 'error') {
         alert(data.message);
-    }
-    else if(data.type === 'redirect')
-    {
+    } else if (data.type === 'redirect') {
         window.location.href = data.path;
-    } 
-    else if(data.type === 'replace') {
-        window.location.replace(data.path); 
-    }
-    else if(data.type === 'getLobby'){
+    } else if (data.type === 'replace') {
+        window.location.replace(data.path);
+    } else if (data.type === 'getLobby') {
         sessionStorage.setItem('lobby', data.lobby);
     }
 };

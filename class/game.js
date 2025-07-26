@@ -211,6 +211,14 @@ class Game {
         return JSON.stringify({type: "drawCards", cards: player.cards});
     }
 
+    /**
+     * Validates if a player's bet is valid.
+     * @param {string} playerId - The ID of the player.
+     * @param {number} bet - The amont of the bet.
+     * @param {boolean} [fold=false] - Wether the player is folding.
+     * @param {number} playerIndex - The index of the player in the players arrey.
+     * @returns {boolean} - True if the bet is valid, otherwise false.
+     */
     betIsValid(playerId, bet, fold = false, playerIndex) {
         let player = this.players[playerIndex];
         if (!Game.betRounds.includes(this.currentRound) || this.currentPlayer != playerIndex || !player.active) {
@@ -218,7 +226,7 @@ class Game {
             return false;
         }
         if (fold) {
-            logger.info("Spieler hat gepasst")
+            logger.info("game.js: Spieler hat gepasst")
             return true;
         }
         //Spieler hat nicht genug Geld -> Es muss alles gesetzt werden, was er noch hat
@@ -242,14 +250,18 @@ class Game {
         let player = this.players[index];
 
         if (!this.betIsValid(playerId, bet, fold, index)) {
-            logger.error(`game.js: Unzulässiger Einsatz: fold: ${fold}, active: ${player.active}, 
-                betDiff: ${bet - player.bet}, currentPlayer: ${this.currentPlayer != index}, balance: ${player.balance}
-                , currentRound: ${this.currentRound}, currentBet: ${this.getCurrentBet}`);
+            // logger.error(`game.js: Unzulässiger Einsatz: fold: ${fold}, active: ${player.active},
+            //     betDiff: ${bet - player.bet}, currentPlayer: ${this.currentPlayer != index}, balance: ${player.balance}
+            //     , currentRound: ${this.currentRound}, currentBet: ${this.getCurrentBet}`);
             return;
         }
 
         if (fold) {
-            this.setFold();
+            player.active = false;
+            this.updateCurrentPlayer();
+            this.sendCallbackMessageToLobby(this.getGameState);
+            logger.info("Game.js: Fold");
+            return;
         }
         player.bet = bet;
         this.updateCurrentPlayer();
@@ -266,14 +278,6 @@ class Game {
             })
         });
         this.sendCallbackMessageToLobby(this.getMoveStateJSON, [this]);
-    }
-
-    setFold(){
-        player.active = false;
-        this.updateCurrentPlayer();
-        this.sendCallbackMessageToLobby(this.getGameState);
-        logger.info("Game.js: Fold");
-        return;
     }
 
     /**
@@ -337,6 +341,10 @@ class Game {
         this.payOut(sortedPlayers)
     }
 
+    /**
+     * Pays out the pot to the winer and adjusts other players' balances.
+     * @param {Array<Object>} activePlayerSortedByScore - An arrey of active players, sorted by their score.
+     */
     payOut(activePlayerSortedByScore) {
         const winner = activePlayerSortedByScore[0];
         activePlayerSortedByScore.forEach(player => {
@@ -363,6 +371,12 @@ class Game {
         })
     }
 
+    /**
+     * Gets the move state for a player and returns it as a JSON string. This is a wraper function.
+     * @param {string} userId - The ID of the player.
+     * @param {Game} [self=this] - The game instance.
+     * @returns {string} - A JSON string representing the player's move state.
+     */
     getMoveStateJSON(userId, self = this) {
         return JSON.stringify({
             type: "moveState",
@@ -370,6 +384,12 @@ class Game {
         });
     }
 
+    /**
+     * Gets the move state for a spesific player. The move state determins what actions the player can take.
+     * @param {string} userId - The ID of the player.
+     * @param {Game} [self=this] - The game instence.
+     * @returns {number} - The move state code.
+     */
     getMoveState(userId, self = this) {
         if (self.players.findIndex(p => p.id === userId) == self.currentPlayer) {
             return Game.rounds[self.currentRound];

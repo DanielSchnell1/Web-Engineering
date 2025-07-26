@@ -1,34 +1,34 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lobby</title>
-  <link rel="stylesheet" href="/css/alwaysactive.css" />
-  <link rel="stylesheet" href="/css/lobby.css" />
-  <link rel="stylesheet" href="/css/pokerhands.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=League+Spartan&display=swap" rel="stylesheet" />
-  <link href="/img/icons/tab.png" rel="icon" type="image/x-icon"/>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Lobby</title>
+    <link rel="stylesheet" href="/css/alwaysactive.css"/>
+    <link rel="stylesheet" href="/css/lobby.css"/>
+    <link rel="stylesheet" href="/css/pokerhands.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan&display=swap" rel="stylesheet"/>
+    <link href="/img/icons/tab.png" rel="icon" type="image/x-icon"/>
 </head>
 <body>
-  <h1>Lobby</h1>
-  <div id="lobbyDiv">
+<h1>Lobby</h1>
+<div id="lobbyDiv">
     <input id="code" type="text" value="LOBBYCODE" readonly aria-label="Lobby ID">
     <ul id="userList"></ul>
-    <input id="start" type="button" value="Spiel starten" style ="display: none;" aria-label="Spiel starten">
-  </div>
+    <input id="start" type="button" value="Spiel starten" style="display: none;" aria-label="Spiel starten">
+</div>
 
-  <dialog id="pokerhands">
-  </dialog>
+<dialog id="pokerhands">
+</dialog>
 
-  <button class="dialogBtn"
-    onclick="fetch('/html/pokerhands.html').then(r=>r.text()).then(h=>{let d=document.getElementById('pokerhands');d.innerHTML=h;d.showModal();})"
-          aria-label="Pokerhand Kombinationen öffnen">
+<button class="dialogBtn"
+        onclick="fetch('/html/pokerhands.html').then(r=>r.text()).then(h=>{let d=document.getElementById('pokerhands');d.innerHTML=h;d.showModal();})"
+        aria-label="Pokerhand Kombinationen öffnen">
     <span class="iconify" data-icon="mdi:cards-playing-outline" style="font-size: 26px;"></span>
-  </button>
+</button>
 
-  <script src="https://code.iconify.design/2/2.2.1/iconify.min.js"></script>
-  <script src="/script/alwaysactive.js"></script>
-  <script src="/script/lobby.js"></script>
+<script src="https://code.iconify.design/2/2.2.1/iconify.min.js"></script>
+<script src="/script/alwaysactive.js"></script>
+<script src="/script/lobby.js"></script>
 </body>
 </html>
